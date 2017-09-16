@@ -23,12 +23,6 @@
 										com[i] += 'a' - 'A';
 
 #define PUSH_UINT64_TO_DATA(a__)			SetIntAt( a__, data.size() );
-										/*{
-											uint64 a__f_macro = data.size(), b__f_macro = 0;\
-											data.resize( a__f_macro+8 );\
-											for( b__f_macro = 0; b__f_macro < 8; ++b__f_macro )\
-												data[a__f_macro+b__f_macro] = (a__>>(b__f_macro<<3))&255;\
-										}*/
 
 #define PUSH_DATA_COMMAND(a__)		data.resize( data.size() + 1 );\
 									data.back() = a__;
@@ -132,6 +126,9 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 											break;
 										case 'n':
 											dst += "\n";
+											break;
+										case '\\':
+											dst += "\\";
 											break;
 										default:
 											goto VAR_STRING_FORMAT_ERROR;
@@ -301,15 +298,53 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					getchar();
 					return;
 				}
-			}/*
+			}
 			else if( com == "jumptrue" )
 			{
-				
+				READ_STRING_CONTINUE;
+				auto it = labels.find( com );
+				if( it != labels.end() )
+				{
+					PUSH_DATA_COMMAND( JUMPTRUE );
+					labelPointer[data.size()] = it->second;
+					printf( "\n Label used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					printf( "\n Undefined jump argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
+					getchar();
+					return;
+				}
 			}
 			else if( com == "jumpfalse" )
 			{
-				
-			}
+				READ_STRING_CONTINUE;
+				auto it = labels.find( com );
+				if( it != labels.end() )
+				{
+					PUSH_DATA_COMMAND( JUMPFALSE );
+					labelPointer[data.size()] = it->second;
+					printf( "\n Label used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					printf( "\n Undefined jump argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
+					getchar();
+					return;
+				}
+			}/*
 			else if( com == "move" )
 			{
 				
@@ -383,11 +418,6 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( ALU );
 				PUSH_DATA_COMMAND( SQRT );
-			}
-			else if( com == "log" )
-			{
-				PUSH_DATA_COMMAND( ALU );
-				PUSH_DATA_COMMAND( LOG );
 			}
 			else if( com == "shiftleft" )
 			{

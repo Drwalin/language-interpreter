@@ -34,10 +34,6 @@ void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 	if( data.size() <= ptr+8 )
 		data.resize( ptr+8 );
 	*((uint64*)&(data[ptr])) = var;
-	/*
-	for( a = 0; a < 8; ++a )
-		data[ptr+a] = (var>>(a<<3))&255;
-	*/
 }
 
 uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
@@ -45,12 +41,6 @@ uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
 	if( data.size() <= ptr+8 )
 		return 0;
 	return *((uint64*)&(data[ptr]));
-	/*
-	uint64 val = 0;
-	for( uint64 i = 0; i < 8; ++i )
-		val += data[ptr+i]<<(i<<3);
-	return val;
-	*/
 }
 
 void MyAssemblyLang::End()
@@ -86,33 +76,23 @@ void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 		cache.resize( size );
 }
 
-void MyAssemblyLang::PushValue( uint64 val, uint64 count )
+void MyAssemblyLang::PushValue( uint64 val )
 {
-//	printf( "\n Val = %lli", (int64)val );
-	std::vector < byte > dat;
-	dat.resize( count );
-	for( int i = 0; i < count; ++i )
-		dat[i] = (val>>(i<<3))&255;
-	PushBytes( dat );
+	cache.resize( cache.size()+8 );
+	*((uint64*)&(cache[cache.size()-8])) = val;
 }
 
-void MyAssemblyLang::PopValue( uint64 & val, uint64 count )
+void MyAssemblyLang::PopValue( uint64 & val )
 {
-	std::vector < byte > dat;
-	PopBytes( dat, count );
-	val = 0;
-	for( int i = 0; i < count; ++i )
-		val += dat[i]<<(i<<3);
+	val = *((uint64*)&(cache[cache.size()-8]));
+	cache.resize( cache.size()-8 );
 }
 
-uint64 MyAssemblyLang::PopValue( uint64 count )
+uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
-	std::vector < byte > dat;
-	PopBytes( dat, count );
-	for( int i = 0; i < count; ++i )
-		val += dat[i]<<(i<<3);
-//	printf( "\n Val = %lli", (int64)val );
+	val = *((uint64*)&(cache[cache.size()-8]));
+	cache.resize( cache.size()-8 );
 	return val;
 }
 
@@ -144,44 +124,6 @@ MyAssemblyLang::MyAssemblyLang()
 	cacheOffset = 0;
 	localVariableOffset = 0;
 	pointer = 0;
-	/*
-	std::vector < byte > elem;
-
-	elem.resize( 2 );
-	elem.[0] = ALU;
-	elem[1] = ADD;		commands["add"] = elem;
-	elem[1] = SUB;		commands["sub"] = elem;
-	elem[1] = DIV;		commands["div"] = elem;
-	elem[1] = MUL;		commands["mul"] = elem;
-	elem[1] = MOD;		commands["mod"] = elem;
-	elem[1] = AND;		commands["and"] = elem;
-	elem[1] = NAND;		commands["nand"] = elem;
-	elem[1] = OR;		commands["or"] = elem;
-	elem[1] = NOR;		commands["nor"] = elem;
-	elem[1] = XOR;		commands["xor"] = elem;
-	elem[1] = XNOR;		commands["xnor"] = elem;
-	elem[1] = NOT;		commands["not"] = elem;
-	elem[1] = POW;		commands["pow"] = elem;
-	elem[1] = SQRT;		commands["sqrt"] = elem;
-	elem[1] = LOG;		commands["log"] = elem;
-
-	elem.resize( 1 );
-	elem[0] = END;				commands["end"] = elem;
-	elem[0] = ALU;				commands["alu"] = elem;
-	elem[0] = PUSH;				commands["push"] = elem;
-	elem[0] = POP;				commands["pop"] = elem;
-	elem[0] = OPENFILE;			commands["openfile"] = elem;
-	elem[0] = CLOSEFILE;		commands["closefile"] = elem;
-	elem[0] = JUMP;				commands["jump"] = elem;
-	elem[0] = JUMPTRUE;			commands["jumptrue"] = elem;
-	elem[0] = JUMPFALSE;		commands["jumpfalse"] = elem;
-	elem[0] = LOADFROMFILE;		commands["loadfromfile"] = elem;
-	elem[0] = SAVETOFILE;		commands["savetofile"] = elem;
-	elem[0] = GETFILESIZE;		commands["getfilesize"] = elem;
-	elem[0] = JUMPFILE;			commands["jumpfile"] = elem;
-	elem[0] = MOVE;				commands["move"] = elem;
-	elem[0] = PUSHADRESS;		commands["pushadress"] = elem;
-	*/
 }
 
 
