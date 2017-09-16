@@ -4,31 +4,6 @@
 #include "Compiler.cpp"
 #include "MethodsCPU.cpp"
 
-
-class MyAssemblyLang
-{
-private:
-
-	std::vector < byte > data;
-	std::vector < byte > cache;
-	uint64 cacheOffset, localVariableOffset;
-	uint64 pointer;
-	std::map < byte, fstream > file;
-
-public:
-	
-	void End();
-	
-	void SetIntAt( uint64 var, uint64 ptr );
-	uint64 GetIntFrom( uint64 ptr );
-	
-	void PushBytes( std::vector < byte > & src );
-	void PopBytes( std::vector < byte > & src, uint64 count );
-	void PushValue( uint64 val, uint64 count );
-	void PopValue( uint64 & val, uint64 count );
-	uint64 PopValue( uint64 count );
-};
-
 int MyAssemblyLang::DoOnce()
 {
 	switch( data[pointer++] )
@@ -165,58 +140,6 @@ int MyAssemblyLang::DoOnce()
 	}
 	return 0;
 }
-
-enum MAIN_COMMENDS
-{
-	END = 0,
-	ALU = 1,
-
-	JUMP = 2,
-
-	PUSHADRESSGLOBAL = 16,			// push( adress )
-	PUSHGLOBAL = 19,
-	PUSHCONST = 20,
-	POPGLOBAL = 22,
-	
-	PRINTINTNEWLINE,
-	SCANINTKEYBOARD
-};
-
-enum ALU_COMMENDS
-{
-	ADD = 0,
-	SUB = 1,
-	DIV = 2,
-	MOD = 3,
-	MUL = 4,
-
-	AND = 5,
-	NAND = 6,
-	OR = 7,
-	NOR = 8,
-	XOR = 9,
-	XNOR = 10
-	NOT = 11,
-
-	POW = 12,
-	SQRT = 13,
-	LOG = 14,
-
-	SHIFTLEFT = 15,
-	SHIFTRIGHT = 16,
-
-	EQUAL = 17,
-	NOTEQUAL = 18,
-	LESS = 19,
-	GRATER = 20,
-	LESSEQUAL = 21,
-	GRATEREQUAL = 22,
-	
-	TOBOOLEAN = 29
-};
-
-
-
 
 
 
