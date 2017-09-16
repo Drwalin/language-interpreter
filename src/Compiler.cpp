@@ -15,6 +15,13 @@
 									if( com[i] >= 'A' && com[i] <= 'Z' )\
 										com[i] += 'a' - 'A';
 
+#define READ_STRING_CONTINUE	code >> com;\
+								if( code.eof() )\
+									continue;\
+								for( int i = 0; i < com.size(); ++i )\
+									if( com[i] >= 'A' && com[i] <= 'Z' )\
+										com[i] += 'a' - 'A';
+
 #define PUSH_UINT64_TO_DATA(a__)			SetIntAt( a__, data.size() );
 										/*{
 											uint64 a__f_macro = data.size(), b__f_macro = 0;\
@@ -33,7 +40,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 	std::map < uint64, uint64 > labelPointer;				// in code pointer to place were it's used - id
 	
 	std::map < std::string, uint64 > variables;				// name - pointer
-	std::map < uint64, uint64 > variableId_variable;			// id - machine code pointer
+	std::map < uint64, uint64 > variableId_variable;		// id - machine code pointer
 	std::map < uint64, uint64 > variablePointer;			// in code pointer to place were it's used - id
 	
 	std::ifstream code;
@@ -65,43 +72,46 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}*/
 		}
 		
-		code.seekg( 0, code.beg() );
+		code.seekg( 0, code.beg );
 		
 		while( true )
 		{
-			READ_STRING_RETURN;
+			com = "";
+			READ_STRING_BREAK;
 			
 			if( com == "label" )
 			{
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				auto it = labels.find(com);
 				if( it != labels.end() )
 				{
 					labelId_label[it->second] = data.size();
+					printf( "\n Label: \"%s\"  pointer: %lli ", com.c_str(), (int64)data.size() );
 				}
 				else
 				{
-					printf( "\n Undefined label name \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					printf( "\n Undefined label name \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 					getchar();
 					return;
 				}
 			}
 			else if( com == "var" )		/////////////////////////////
 			{
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				std::string varType = com;
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				auto it = variables.find( com );
 				if( it != variables.end() )
 				{
-					variableId_variable[com] = data.size();
+					variableId_variable[it->second] = data.size();
+					printf( "\n Variable: \"%s\"  pointer: %lli ", com.c_str(), (int64)data.size() );
 					if( varType == "string" )
 					{
-						READ_STRING_RETURN;
+						READ_STRING_CONTINUE;
 						if( false )
 						{
 							VAR_STRING_FORMAT_ERROR:
-								printf( "\n Undefined string format \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+								printf( "\n Undefined string format \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 								getchar();
 								return;
 						}
@@ -162,14 +172,14 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					}
 					else
 					{
-						printf( "\n Undefined variable type \"%s\"  at byte: %i", varType.c_str(), code.tellg() );
+						printf( "\n Undefined variable type \"%s\"  at byte: %i", varType.c_str(), (int)code.tellg() );
 						getchar();
 						return;
 					}
 				}
 				else
 				{
-					printf( "\n Undefined variable name in variable declaration \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					printf( "\n Undefined variable name in variable declaration \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 					getchar();
 					return;
 				}
@@ -184,7 +194,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "push" )
 			{
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				auto it = variables.find( (com[0]=='&') ? com.c_str()+1 : com );
 				if( it != variables.end() )
 				{
@@ -197,6 +207,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						PUSH_DATA_COMMAND( PUSHGLOBAL );
 					}
 					variablePointer[data.size()] = it->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -210,7 +221,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					int64 temp = MyAssemblyLang::GetInt64FromString( com, err );
 					if( err )
 					{
-						printf( "\n Undefined push argument \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+						printf( "\n Undefined push argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 						getchar();
 						return;
 					}
@@ -223,12 +234,13 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "pop" )
 			{
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				auto it = variables.find( com );
 				if( it != variables.end() )
 				{
 					PUSH_DATA_COMMAND( POPGLOBAL );
-					variablePointer[data.size()] = it->second
+					variablePointer[data.size()] = it->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -238,7 +250,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				}
 				else
 				{
-					printf( "\n Undefined pop argument \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					printf( "\n Undefined pop argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 					getchar();
 					return;
 				}
@@ -269,12 +281,13 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}*/
 			else if( com == "jump" )
 			{
-				READ_STRING_RETURN;
+				READ_STRING_CONTINUE;
 				auto it = labels.find( com );
 				if( it != labels.end() )
 				{
 					PUSH_DATA_COMMAND( JUMP );
-					labelPointer[data.size()] = it->second
+					labelPointer[data.size()] = it->second;
+					printf( "\n Label used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -284,7 +297,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				}
 				else
 				{
-					printf( "\n Undefined jump argument \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					printf( "\n Undefined jump argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 					getchar();
 					return;
 				}
@@ -315,6 +328,11 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( ALU );
 				PUSH_DATA_COMMAND( DIV );
+			}
+			else if( com == "mul" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( MUL );
 			}
 			else if( com == "mod" )
 			{
@@ -422,58 +440,28 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "printintnewline" )
 			{
-				READ_STRING_RETURN;
-				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables.end() )
-				{
-					PUSH_DATA_COMMAND( PRINTINTNEWLINE );
-					variablePointer[data.size()] = it->second
-					uint64 temp1 = data.size(), temp2;
-					data.resize( temp1 + 8 );
-					for( temp2 = 0; temp2 < 8; ++temp2 )
-					{
-						data[temp1+temp2] = 0;
-					}
-				}
-				else
-				{
-					printf( "\ Can not print const: \"%s\"  at byte: %i", com.c_str(), code.tellg() );
-					getchar();
-					return;
-				}
+				PUSH_DATA_COMMAND( PRINTINTNEWLINE );
 			}
 			else if( com == "scanintkeyboard" )
 			{
-				READ_STRING_RETURN;
-				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables.end() )
-				{
-					PUSH_DATA_COMMAND( SCANINTKEYBOARD );
-					variablePointer[data.size()] = it->second
-					uint64 temp1 = data.size(), temp2;
-					data.resize( temp1 + 8 );
-					for( temp2 = 0; temp2 < 8; ++temp2 )
-					{
-						data[temp1+temp2] = 0;
-					}
-				}
-				else
-				{
-					printf( "\ Can not print const: \"%s\"  at byte: %i", com.c_str(), code.tellg() );
-					getchar();
-					return;
-				}
+				PUSH_DATA_COMMAND( SCANINTKEYBOARD );
+			}
+			else if( com == "" )
+			{
+				break;
 			}
 		}
 		
 		for( auto it = variablePointer.begin(); it != variablePointer.end(); *it++ )
 		{
+			printf( "\n Variable used in point: %lli  should be: %lli", (int64)(it->first), (int64)(variableId_variable[it->second]) );
 			SetIntAt( variableId_variable[it->second], it->first );
 		}
 		
-		for( auto it = labelPointer.begin(); it != lablePointer.end(); *it++ )
+		for( auto it = labelPointer.begin(); it != labelPointer.end(); *it++ )
 		{
-			SetIntAt( lableId_lable[it->second], it->first );
+			printf( "\n Jump used in point: %lli  should be: %lli", (int64)(it->first), (int64)(labelId_label[it->second]) );
+			SetIntAt( labelId_label[it->second], it->first );
 		}
 	}
 	else

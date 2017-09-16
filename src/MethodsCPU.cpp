@@ -1,7 +1,7 @@
 
 #pragma once
 
-static int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
+int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 {
 	err = 0;
 	int64 dst = 0;
@@ -15,7 +15,7 @@ static int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 		else if( str[i] >= '0' && str[i] <= '9' )
 		{
 			dst *= (int64)(10);
-			dst += (int64)(src[i]-='0');
+			dst += (int64)(str[i]-='0');
 		}
 		else
 		{
@@ -33,17 +33,24 @@ void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 	uint64 a = 0;
 	if( data.size() <= ptr+8 )
 		data.resize( ptr+8 );
+	*((uint64*)&(data[ptr])) = var;
+	/*
 	for( a = 0; a < 8; ++a )
 		data[ptr+a] = (var>>(a<<3))&255;
+	*/
 }
 
 uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
 {
-	if( data.size() >= ptr+8 )
+	if( data.size() <= ptr+8 )
 		return 0;
+	return *((uint64*)&(data[ptr]));
+	/*
 	uint64 val = 0;
 	for( uint64 i = 0; i < 8; ++i )
 		val += data[ptr+i]<<(i<<3);
+	return val;
+	*/
 }
 
 void MyAssemblyLang::End()
@@ -69,7 +76,7 @@ void MyAssemblyLang::PushBytes( std::vector < byte > & src )
 void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 {
 	src.resize( count );
-	for( uint64 i = 0; i < src.size(); ++i )
+	for( uint64 i = count-1; i < count; --i )
 	{
 		src[i] = cache[cacheOffset];
 		cacheOffset--;
@@ -81,7 +88,8 @@ void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 
 void MyAssemblyLang::PushValue( uint64 val, uint64 count )
 {
-	std::vector < bytes > dat;
+//	printf( "\n Val = %lli", (int64)val );
+	std::vector < byte > dat;
 	dat.resize( count );
 	for( int i = 0; i < count; ++i )
 		dat[i] = (val>>(i<<3))&255;
@@ -90,9 +98,8 @@ void MyAssemblyLang::PushValue( uint64 val, uint64 count )
 
 void MyAssemblyLang::PopValue( uint64 & val, uint64 count )
 {
-	std::vector < bytes > dat;
+	std::vector < byte > dat;
 	PopBytes( dat, count );
-	dat.resize( count );
 	val = 0;
 	for( int i = 0; i < count; ++i )
 		val += dat[i]<<(i<<3);
@@ -101,11 +108,11 @@ void MyAssemblyLang::PopValue( uint64 & val, uint64 count )
 uint64 MyAssemblyLang::PopValue( uint64 count )
 {
 	uint64 val = 0;
-	std::vector < bytes > dat;
+	std::vector < byte > dat;
 	PopBytes( dat, count );
-	dat.resize( count );
 	for( int i = 0; i < count; ++i )
 		val += dat[i]<<(i<<3);
+//	printf( "\n Val = %lli", (int64)val );
 	return val;
 }
 
@@ -133,6 +140,11 @@ MyAssemblyLang::~MyAssemblyLang()
 
 MyAssemblyLang::MyAssemblyLang()
 {
+	counterActions = 0;
+	cacheOffset = 0;
+	localVariableOffset = 0;
+	pointer = 0;
+	/*
 	std::vector < byte > elem;
 
 	elem.resize( 2 );
@@ -169,6 +181,7 @@ MyAssemblyLang::MyAssemblyLang()
 	elem[0] = JUMPFILE;			commands["jumpfile"] = elem;
 	elem[0] = MOVE;				commands["move"] = elem;
 	elem[0] = PUSHADRESS;		commands["pushadress"] = elem;
+	*/
 }
 
 

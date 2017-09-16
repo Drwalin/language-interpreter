@@ -6,139 +6,160 @@
 
 int MyAssemblyLang::DoOnce()
 {
+	++counterActions;
+//	printf( "\n Current action number: %lli \n Pointer: %lli \n", (int64)counterActions, (int64)pointer );
+	int64 temp1, temp2, temp;
 	switch( data[pointer++] )
 	{
 	case END:
-		return 1;
+//		printf( " end\n" );
+		return 0;
 		break;
 	case JUMP:
+//		printf( " jump\n" );
 		pointer = GetIntFrom( pointer );
 		break;
 	case PUSHADRESSGLOBAL:
+//		printf( " pushadressglobal\n" );
 		PushValue( GetIntFrom( pointer ), 8 );
 		pointer += 8;
 		break;
 	case PUSHGLOBAL:
+//		printf( " pushglobal\n" );
 		PushValue( GetIntFrom( GetIntFrom( pointer ) ), 8 );
 		pointer += 8;
 		break;
 	case PUSHCONST:
+//		printf( " pushconst\n" );
 		PushValue( GetIntFrom( pointer ), 8 );
 		pointer += 8;
 		break;
 	case POPGLOBAL:
+//		printf( " popglobal\n" );
 		SetIntAt( PopValue( 8 ), GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
 	case PRINTINTNEWLINE:
-		printf( "\n %lli", (int64)PopValue( 8 ) );
+//		printf( " printf\n" );
+		printf( "\n " );
+		std::cout << (int64)PopValue( 8 );
 		break;
 	case SCANINTKEYBOARD:
-		int64 temp = 0;
-		scanf( "%lli", &temp );
+//		printf( " scanf\n" );
+		printf( "\n " );
+		temp = 0;
+		std::cin >> temp;
 		PushValue( (uint64)temp, 8 );
 		break;
 	case ALU:
+//		printf( " alu\n" );
+#define uint64
 		switch( data[pointer++] )
 		{
 		case ADD:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2+temp1), 8 );
 			break;
 		case SUB:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2-temp1), 8 );
 			break;
 		case DIV:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2/temp1), 8 );
 			break;
 		case MOD:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2%temp1), 8 );
 			break;
 		case MUL:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2*temp1), 8 );
 			break;
 		case AND:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2&temp1), 8 );
 			break;
 		case NAND:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( ~uint64(temp2&temp1), 8 );
 			break;
 		case OR:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2|temp1), 8 );
 			break;
 		case NOR:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( ~uint64(temp2|temp1), 8 );
 			break;
 		case XOR:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2^temp1), 8 );
 			break;
 		case XNOR:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( ~uint64(temp2^temp1), 8 );
 			break;
 		case NOT:
 			PushValue( ~PopValue( 8 ), 8 );
 			break;
 		case POW:////////////////////////////////////////////////////
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2+temp1), 8 );
 			break;
 		case SQRT:///////////////////////////////////////////////////
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2+temp1), 8 );
 			break;
 		case LOG:////////////////////////////////////////////////////
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2+temp1), 8 );
 			break;
 		case SHIFTLEFT:
-			uint64 temp1 = PopValue( 8 ); uint64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( temp2<<temp1, 8 );
 			break;
 		case SHIFTRIGHT:
-			uint64 temp1 = PopValue( 8 ); uint64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( temp2>>temp1, 8 );
 			break;
 		case EQUAL:
-			uint64 temp1 = PopValue( 8 ); uint64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2==temp1), 8 );
 			break;
 		case NOTEQUAL:
-			uint64 temp1 = PopValue( 8 ); uint64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2!=temp1), 8 );
 			break;
 		case LESS:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2<temp1), 8 );
 			break;
 		case GRATER:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2>temp1), 8 );
 			break;
 		case LESSEQUAL:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2<=temp1), 8 );
 			break;
 		case GRATEREQUAL:
-			int64 temp1 = PopValue( 8 ); int64 temp2 = PopValue( 8 );
+			temp1 = PopValue( 8 ); temp2 = PopValue( 8 );
 			PushValue( uint64(temp2>=temp1), 8 );
 			break;
 		case TOBOOLEAN:
-			PushValue( uint64(PopValue(8)!=0), 8 )
+			PushValue( uint64(PopValue(8)!=0), 8 );
 			break;
+		default:
+			return 0;
 		}
+#undef uint64
+//		printf( "\n = %lli ", (int64)cache[cache.size()-8] );
 		break;
+	default:
+		return 0;
 	}
-	return 0;
+	return 1;
 }
 
 

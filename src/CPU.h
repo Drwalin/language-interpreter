@@ -19,13 +19,14 @@ typedef long long int int64;
 
 class MyAssemblyLang
 {
-private:
+public:
 
 	std::vector < byte > data;
 	std::vector < byte > cache;
 	uint64 cacheOffset, localVariableOffset;
 	uint64 pointer;
-	std::map < byte, fstream > file;
+	std::map < byte, std::fstream > file;
+	uint64 counterActions;		// counter of iterations
 
 	std::map < std::string, std::vector < byte > > commands;
 
@@ -124,7 +125,7 @@ enum ALU_COMMENDS
 	OR = 7,
 	NOR = 8,
 	XOR = 9,
-	XNOR = 10
+	XNOR = 10,
 	NOT = 11,
 
 	POW = 12,
