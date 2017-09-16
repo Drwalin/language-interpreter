@@ -15,6 +15,7 @@
 
 typedef unsigned char byte;
 typedef unsigned long long int uint64;
+typedef long long int int64;
 
 class MyAssemblyLang
 {
@@ -30,9 +31,12 @@ private:
 
 public:
 	
-	static long long int GetInt64FromString( std::string str, int & err );
+	static int64 GetInt64FromString( std::string str, int & err );
 	
 	void End();
+	
+	void SetIntAt( uint64 var, uint64 ptr );
+	uint64 GetIntFrom( uint64 ptr );
 	
 	// push -  allocate   1024 bytes blocks (if needed)
 	// pop - reallocate n 1024 bytes blocks (if cache.size()-cacheOffset > n*1024)
@@ -40,6 +44,7 @@ public:
 	void PopBytes( std::vector < byte > & src, uint64 count );
 	void PushValue( uint64 val, uint64 count );
 	void PopValue( uint64 & val, uint64 count );
+	uint64 PopValue( uint64 count );
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
@@ -75,11 +80,11 @@ enum MAIN_COMMENDS
 	*/
 
 	PUSHADRESSGLOBAL = 16,			// push( adress )
-	PUSHADRESSLOCAL = 17,			// push( adress )
-	PUSHLOCAL = 18,
-	PUSHGLOBAL = 19,
+//	PUSHADRESSLOCAL = 17,			// push( adress )
+	PUSHGLOBAL = 18,
+//	PUSHLOCAL = 19,
 	PUSHCONST = 20,
-	POPLOCAL = 21,
+//	POPLOCAL = 21,
 	POPGLOBAL = 22,
 
 	/*
@@ -92,13 +97,18 @@ enum MAIN_COMMENDS
 	GOTOXY = 29,
 	*/
 
-	GETKEYBOARDBUFFERCHAR = 30,
+//	GETKEYBOARDBUFFERCHAR = 30,
 	
+	/*
 	CALL = 31,
 	RET = 32,
 	
 	ALLOCATE = 33,
-	FDEALLOCATE = 34
+	FDEALLOCATE = 34,
+	*/
+	
+	PRINTINTNEWLINE,		/////////////////////////////////////////////////////
+	SCANINTKEYBOARD			/////////////////////////////////////////////////////
 };
 
 enum ALU_COMMENDS
@@ -131,7 +141,16 @@ enum ALU_COMMENDS
 	LESSEQUAL = 21,
 	GRATEREQUAL = 22,
 	
-	//COMPARESTRINGS = 23
+	/*
+	STRINGEQUAL = 23,
+	STRINGNOTEQUAL = 24,
+	STRINGLESS = 25,
+	STRINGGRATER = 26,
+	STRINGLESSEQUAL = 27,
+	STRINGGRATEREQUAL = 28,
+	*/
+	
+	TOBOOLEAN = 29
 };
 
 

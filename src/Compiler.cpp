@@ -15,15 +15,16 @@
 									if( com[i] >= 'A' && com[i] <= 'Z' )\
 										com[i] += 'a' - 'A';
 
-#define PUSH_UINT64_TO_DATA(a__)		{\
+#define PUSH_UINT64_TO_DATA(a__)			SetIntAt( a__, data.size() );
+										/*{
 											uint64 a__f_macro = data.size(), b__f_macro = 0;\
 											data.resize( a__f_macro+8 );\
 											for( b__f_macro = 0; b__f_macro < 8; ++b__f_macro )\
 												data[a__f_macro+b__f_macro] = (a__>>(b__f_macro<<3))&255;\
-										}
+										}*/
 
 #define PUSH_DATA_COMMAND(a__)		data.resize( data.size() + 1 );\
-									data.back( a__ );
+									data.back() = a__;
 
 void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 {
@@ -32,7 +33,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 	std::map < uint64, uint64 > labelPointer;				// in code pointer to place were it's used - id
 	
 	std::map < std::string, uint64 > variables;				// name - pointer
-	std::map < uint64, uint64 > variableId_label;			// id - machine code pointer
+	std::map < uint64, uint64 > variableId_variable;			// id - machine code pointer
 	std::map < uint64, uint64 > variablePointer;			// in code pointer to place were it's used - id
 	
 	std::ifstream code;
@@ -93,7 +94,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				auto it = variables.find( com );
 				if( it != variables.end() )
 				{
-					variableId_label[com] = data.size();
+					variableId_variable[com] = data.size();
 					if( varType == "string" )
 					{
 						READ_STRING_RETURN;
@@ -132,7 +133,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 									}
 								}
 								temp1 = data.size();
-								data.resize( dst.size()+1 );
+								data.resize( temp1+dst.size()+1 );
 								data.back() = 0;
 								for( temp2 = 0; temp2 < dst.size(); ++temp2 )
 								{
@@ -143,7 +144,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					}
 					else if( varType == "int" )
 					{
-						long long int temp = 0;
+						int64 temp = 0;
 						code >> temp;
 						PUSH_UINT64_TO_DATA(temp);
 					}
@@ -153,10 +154,10 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						uint64 temp1 = 0, temp2 = 0, temp3;
 						code >> temp1;
 						code >> temp2;
-						temp = temp1;
+						temp = (byte)temp1;
 						temp1 = data.size();
 						data.resize( temp1 + temp2 );
-						for( temp3 = 0; temp3 < temp2; ++ temp3 )
+						for( temp3 = 0; temp3 < temp2; ++temp3 )
 							data[temp1+temp3] = temp;
 					}
 					else
@@ -179,12 +180,12 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}*/
 			else if( com == "end" )		//////////////////////
 			{
-				data.push_back( END );
+				PUSH_DATA_COMMAND( END );
 			}
 			else if( com == "push" )
 			{
 				READ_STRING_RETURN;
-				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
+				auto it = variables.find( (com[0]=='&') ? com.c_str()+1 : com );
 				if( it != variables.end() )
 				{
 					if( com[0] == '&' )
@@ -195,7 +196,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					{
 						PUSH_DATA_COMMAND( PUSHGLOBAL );
 					}
-					variablePointer[data.size()] = it->second
+					variablePointer[data.size()] = it->second;
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -226,6 +227,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				auto it = variables.find( com );
 				if( it != variables.end() )
 				{
+					PUSH_DATA_COMMAND( POPGLOBAL );
 					variablePointer[data.size()] = it->second
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
@@ -271,6 +273,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				auto it = labels.find( com );
 				if( it != labels.end() )
 				{
+					PUSH_DATA_COMMAND( JUMP );
 					labelPointer[data.size()] = it->second
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
@@ -300,96 +303,177 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}*/
 			else if( com == "add" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( ADD );
 			}
 			else if( com == "sub" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( SUB );
 			}
 			else if( com == "div" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( DIV );
 			}
 			else if( com == "mod" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( MOD );
 			}
 			else if( com == "and" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( AND );
 			}
 			else if( com == "nand" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( NAND );
 			}
 			else if( com == "or" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( OR );
 			}
 			else if( com == "nor" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( NOR );
 			}
 			else if( com == "xor" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( XOR );
 			}
 			else if( com == "xnor" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( XNOR );
 			}
 			else if( com == "not" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( NOT );
 			}
 			else if( com == "pow" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( POW );
 			}
 			else if( com == "sqrt" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( SQRT );
 			}
 			else if( com == "log" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( LOG );
 			}
 			else if( com == "shiftleft" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( SHIFTLEFT );
 			}
 			else if( com == "shiftright" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( SHIFTRIGHT );
 			}
 			else if( com == "equal" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( EQUAL );
 			}
 			else if( com == "notequal" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( NOTEQUAL );
 			}
 			else if( com == "less" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( LESS );
 			}
 			else if( com == "grater" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( GRATER );
 			}
 			else if( com == "lessequal" )
 			{
-				
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( LESSEQUAL );
 			}
 			else if( com == "graterequal" )
 			{
-				
-			}
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( GRATEREQUAL );
+			}/*
 			else if( com == "comparestring" )
 			{
 				
+			}*/
+			else if( com == "tobool" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( TOBOOLEAN );
 			}
+			else if( com == "printintnewline" )
+			{
+				READ_STRING_RETURN;
+				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables.end() )
+				{
+					PUSH_DATA_COMMAND( PRINTINTNEWLINE );
+					variablePointer[data.size()] = it->second
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					printf( "\ Can not print const: \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					getchar();
+					return;
+				}
+			}
+			else if( com == "scanintkeyboard" )
+			{
+				READ_STRING_RETURN;
+				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables.end() )
+				{
+					PUSH_DATA_COMMAND( SCANINTKEYBOARD );
+					variablePointer[data.size()] = it->second
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					printf( "\ Can not print const: \"%s\"  at byte: %i", com.c_str(), code.tellg() );
+					getchar();
+					return;
+				}
+			}
+		}
+		
+		for( auto it = variablePointer.begin(); it != variablePointer.end(); *it++ )
+		{
+			SetIntAt( variableId_variable[it->second], it->first );
+		}
+		
+		for( auto it = labelPointer.begin(); it != lablePointer.end(); *it++ )
+		{
+			SetIntAt( lableId_lable[it->second], it->first );
 		}
 	}
 	else

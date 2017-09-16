@@ -1,13 +1,10 @@
 
 #pragma once
 
-#include "Compiler.cpp"
-#include "CPU.cpp"
-
-static long long int MyAssemblyLang::GetInt64FromString( std::string str, int & err )
+static int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 {
 	err = 0;
-	long long int dst = 0;
+	int64 dst = 0;
 	bool negate = false;
 	for( int i = 0; str[i] != 0; ++i )
 	{
@@ -17,8 +14,8 @@ static long long int MyAssemblyLang::GetInt64FromString( std::string str, int & 
 		}
 		else if( str[i] >= '0' && str[i] <= '9' )
 		{
-			dst *= (long long int)(10);
-			dst += (long long int)(src[i]-='0');
+			dst *= (int64)(10);
+			dst += (int64)(src[i]-='0');
 		}
 		else
 		{
@@ -29,6 +26,24 @@ static long long int MyAssemblyLang::GetInt64FromString( std::string str, int & 
 	if( negate )
 		dst = -dst;
 	return dst;
+}
+
+void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
+{
+	uint64 a = 0;
+	if( data.size() <= ptr+8 )
+		data.resize( ptr+8 );
+	for( a = 0; a < 8; ++a )
+		data[ptr+a] = (var>>(a<<3))&255;
+}
+
+uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
+{
+	if( data.size() >= ptr+8 )
+		return 0;
+	uint64 val = 0;
+	for( uint64 i = 0; i < 8; ++i )
+		val += data[ptr+i]<<(i<<3);
 }
 
 void MyAssemblyLang::End()
@@ -81,6 +96,17 @@ void MyAssemblyLang::PopValue( uint64 & val, uint64 count )
 	val = 0;
 	for( int i = 0; i < count; ++i )
 		val += dat[i]<<(i<<3);
+}
+
+uint64 MyAssemblyLang::PopValue( uint64 count )
+{
+	uint64 val = 0;
+	std::vector < bytes > dat;
+	PopBytes( dat, count );
+	dat.resize( count );
+	for( int i = 0; i < count; ++i )
+		val += dat[i]<<(i<<3);
+	return val;
 }
 
 void MyAssemblyLang::Clear()
