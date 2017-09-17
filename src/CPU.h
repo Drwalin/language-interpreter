@@ -39,8 +39,8 @@ public:
 	void SetIntAt( uint64 var, uint64 ptr );
 	uint64 GetIntFrom( uint64 ptr );
 	
-	// push -  allocate   1024 bytes blocks (if needed)
-	// pop - reallocate n 1024 bytes blocks (if cache.size()-cacheOffset > n*1024)
+	// push -  allocate   4096 bytes blocks (if needed)
+	// pop - reallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
 	void PushBytes( std::vector < byte > & src );
 	void PopBytes( std::vector < byte > & src, uint64 count );
 	void PushValue( uint64 val );

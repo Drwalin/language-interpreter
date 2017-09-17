@@ -54,7 +54,7 @@ void MyAssemblyLang::End()
 
 void MyAssemblyLang::PushBytes( std::vector < byte > & src )
 {
-	register uint64 size = (((cacheOffset+1+src.size())>>10)+1)<<10;
+	register uint64 size = (((cacheOffset+1+src.size())>>12)+1)<<12;
 	if( size > cache.size() )
 		cache.resize( size );
 	for( uint64 i = 0; i < src.size(); ++i )
@@ -71,28 +71,37 @@ void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 		src[i] = cache[cacheOffset];
 		cacheOffset--;
 	}
-	register uint64 size = (((cacheOffset+1)>>10)+1)<<10;
+	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
 	if( size < cache.size() )
 		cache.resize( size );
 }
 
 void MyAssemblyLang::PushValue( uint64 val )
 {
-	cache.resize( cache.size()+8 );
-	*((uint64*)&(cache[cache.size()-8])) = val;
+	register uint64 size = (((cacheOffset+9)>>12)+1)<<12;
+	if( size > cache.size() )
+		cache.resize( size );
+	*((uint64*)&(cache[cacheOffset])) = val;
+	cacheOffset+=8;
 }
 
 void MyAssemblyLang::PopValue( uint64 & val )
 {
-	val = *((uint64*)&(cache[cache.size()-8]));
-	cache.resize( cache.size()-8 );
+	cacheOffset-=8;
+	val = *((uint64*)&(cache[cacheOffset]));
+	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
+	if( size < cache.size() )
+		cache.resize( size );
 }
 
 uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
-	val = *((uint64*)&(cache[cache.size()-8]));
-	cache.resize( cache.size()-8 );
+	cacheOffset-=8;
+	val = *((uint64*)&(cache[cacheOffset]));
+	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
+	if( size < cache.size() )
+		cache.resize( size );
 	return val;
 }
 
