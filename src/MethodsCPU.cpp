@@ -113,6 +113,157 @@ void MyAssemblyLang::Do( const uint64 count )
 	}
 }
 
+uint64 MyAssemblyLang::AllocateMemory( uint64 size )
+{
+	/*
+	uint64 temp;
+	for( uint64 i = 0; i < freeMemoryMap.size(); i+=2 )
+	{
+		temp = freeMemoryMap[i+1]+1-freeMemoryMap[i];
+		if( temp == size )
+		{
+			temp = freeMemoryMap[i];
+			freeMemoryMap.erase( freeMemoryMap.begin()+i, freeMemoryMap.begin()+i+1 );
+			return temp;
+		}
+		else if( temp > size )
+		{
+			temp = freeMemoryMap[i];
+			freeMemoryMap[i] += size;
+			return temp;
+		}
+	}
+	uint64 ptr = data.size();
+	data.resize( ptr+size );
+	return ptr;
+	*/
+	uint64 temp;
+	for( uint64 i = 0; i+1 < freeMemoryMap.size(); i+=2 )
+	{
+		temp = freeMemoryMap[i+1]+1-freeMemoryMap[i];
+		if( temp == size )
+		{
+			temp = freeMemoryMap[i];
+			freeMemoryMap.erase( freeMemoryMap.begin()+i, freeMemoryMap.begin()+i+2 );
+			freeMemoryMap.shrink_to_fit();
+			return temp;
+		}
+		else if( temp > size )
+		{
+			temp = freeMemoryMap[i];
+			freeMemoryMap[i] += size;
+			return temp;
+		}
+	}
+	uint64 ptr = data.size();
+	data.resize( data.size()+size );
+	return ptr;
+}
+
+void MyAssemblyLang::FreeMemory( uint64 beg, uint64 size )
+{
+	/*
+	uint64 end = beg+size-1, i;
+	
+	if( freeMemoryMap.size() > 0 )
+	{
+		for( i = 0; i < freeMemoryMap.size(); i+=2 )
+		{
+			if( end < freeMemoryMap[i] )
+			{
+				freeMemoryMap.insert( freeMemoryMap.begin()+i, end );
+				freeMemoryMap.insert( freeMemoryMap.begin()+i, beg );
+				break;
+			}
+		}
+		if( i >= freeMemoryMap.size() )
+		{
+			freeMemoryMap.resize( freeMemoryMap.size() + 2 );
+			freeMemoryMap[ freeMemoryMap.size()-2 ] = beg;
+			freeMemoryMap[ freeMemoryMap.size()-2 ] = end;
+		}
+	}
+	else
+	{
+		freeMemoryMap.resize( 2 );
+		freeMemoryMap[0] = beg;
+		freeMemoryMap[1] = end;
+	}
+	
+	i = 0;
+	while( true )
+	{
+		if( i+2 >= freeMemoryMap.size() )
+			break;
+		if( freeMemoryMap[i+1]+1 >= freeMemoryMap[i+2] )
+		{
+			freeMemoryMap.erase( freeMemoryMap.begin()+i+1, freeMemoryMap.begin()+i+2 );
+			continue;
+		}
+		i+=2;
+	}
+	
+	if( freeMemoryMap.size() > 0 )
+	{
+		if( freeMemoryMap.back() >= data.size()-1 )
+		{
+			data.resize( freeMemoryMap[ freeMemoryMap.size()-2 ] );
+			freeMemoryMap.resize( freeMemoryMap.size()-2 );
+		}
+	}
+	*/
+	uint64 end = beg+size-1, i;
+	if( freeMemoryMap.size() > 0 )
+	{
+		for( i = 0; i < freeMemoryMap.size(); i+=2 )
+		{
+			if( end < freeMemoryMap[i] )
+			{
+				freeMemoryMap.insert( freeMemoryMap.begin()+i, end );
+				freeMemoryMap.insert( freeMemoryMap.begin()+i, beg );
+				break;
+			}
+		}
+		if( i >= freeMemoryMap.size() )
+		{
+			freeMemoryMap.resize( freeMemoryMap.size() + 2 );
+			freeMemoryMap[ freeMemoryMap.size()-1 ] = end;
+			freeMemoryMap[ freeMemoryMap.size()-2 ] = beg;
+		}
+	}
+	else
+	{
+		freeMemoryMap.resize( 2 );
+		freeMemoryMap[0] = beg;
+		freeMemoryMap[1] = end;
+	}
+	
+	i = 0;
+	while( true )
+	{
+		if( i+2 >= freeMemoryMap.size() )
+			break;
+		if( freeMemoryMap[i+1]+1 >= freeMemoryMap[i+2] )
+		{
+			freeMemoryMap.erase( freeMemoryMap.begin()+i+1, freeMemoryMap.begin()+i+3 );
+			freeMemoryMap.shrink_to_fit();
+			continue;
+		}
+		i+=2;
+	}
+	
+	if( freeMemoryMap.size() > 0 )
+	{
+		if( freeMemoryMap.back() >= data.size()-1 )
+		{
+			data.resize( freeMemoryMap[ freeMemoryMap.size()-2 ] );
+			data.shrink_to_fit();
+			freeMemoryMap.resize( freeMemoryMap.size()-2 );
+			freeMemoryMap.shrink_to_fit();
+		}
+	}
+}
+
 MyAssemblyLang::~MyAssemblyLang()
 {
 	Clear();

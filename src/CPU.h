@@ -28,7 +28,7 @@ public:
 	std::map < byte, std::fstream > file;
 	uint64 counterActions;		// counter of iterations
 
-	std::vector < byte > freeMemoryMap;
+	std::vector < uint64 > freeMemoryMap;
 
 public:
 	
@@ -46,6 +46,9 @@ public:
 	void PushValue( uint64 val );
 	void PopValue( uint64 & val );
 	uint64 PopValue();
+	
+	uint64 AllocateMemory( uint64 size );
+	void FreeMemory( uint64 beg, uint64 size );
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
@@ -59,98 +62,105 @@ public:
 
 enum MAIN_COMMENDS
 {
-	END = 0,
-	ALU = 1,
+	END,
+	ALU,
 
-	JUMP = 2,				// pointer = adress
-	JUMPTRUE = 3,			// if( cache.top()->val != 0 ) JUMP else ++pointer
-	JUMPFALSE = 4,			// if( cache.top()->val == 0 ) JUMP else ++pointer
-
-	/*
-	FILEOPEN = 5,			// std::ios::binary
-	FILECLOSE = 6,
-	FILEREADBYTE = 7,
-	FILEREADSTRING = 8,
-	FILEREADINT = 9,
-	FILESAVEBYTE = 10,
-	FILESAVESTRING = 11,
-	FILESAVEINT = 12,
-	FILEGETSIZE = 13,
-	FILEJUMP = 14,
-	FILEGETPOS = 15,
-	*/
-
-	PUSHADRESSGLOBAL = 16,			// push( adress )
-//	PUSHADRESSLOCAL = 17,			// push( adress )
-	PUSHGLOBAL = 18,
-//	PUSHLOCAL = 19,
-	PUSHCONST = 20,
-//	POPLOCAL = 21,
-	POPGLOBAL = 22,
+	JUMP,				// pointer = adress
+	JUMPTRUE,			// if( cache.top()->val != 0 ) JUMP else ++pointer
+	JUMPFALSE,			// if( cache.top()->val == 0 ) JUMP else ++pointer
 
 	/*
-	PRINTCHAR = 23,
-	PRINTSTRING = 24,
-	PRINTINT = 25,
-	GETCHAR = 26,
-    GETSTRING = 27,
-    GETINT = 28,
-	GOTOXY = 29,
+	FILEOPEN,			// std::ios::binary
+	FILECLOSE,
+	FILEREADBYTE,
+	FILEREADSTRING,
+	FILEREADINT,
+	FILESAVEBYTE,
+	FILESAVESTRING,
+	FILESAVEINT,
+	FILEGETSIZE,
+	FILEJUMP,
+	FILEGETPOS,
 	*/
 
-//	GETKEYBOARDBUFFERCHAR = 30,
+	PUSHADRESSGLOBAL,			// push( adress )
+	PUSHADRESSVALUEGLOBAL,		// push( value( adress ) )
+	PUSHGLOBAL,
+	POPGLOBAL,
+	PUSHADRESSLOCAL,			// push( adress )
+	PUSHADRESSVALUELOCAL,		// push( value( adress ) )
+	PUSHLOCAL,
+	POPLOCAL,
+	PUSHCONST,
+
+	/*
+	PRINTCHAR,
+	PRINTSTRING,
+	PRINTINT,
+	GETCHAR,
+    GETSTRING,
+    GETINT,
+	GOTOXY,
+	*/
+
+//	GETKEYBOARDBUFFERCHAR,
 	
 	/*
-	CALL = 31,
-	RET = 32,
-	
-	ALLOCATE = 33,
-	FDEALLOCATE = 34,
+	CALL,
+	RET,
 	*/
+	
+	ALLOCATEMEMORY,
+	FREEMEMORY,
 	
 	PRINTINTNEWLINE,		/////////////////////////////////////////////////////
-	SCANINTKEYBOARD			/////////////////////////////////////////////////////
+	SCANINTKEYBOARD,		/////////////////////////////////////////////////////
+	
+	/*
+	STRINGLENGTH,
+	DATACOPY
+	*/
 };
 
 enum ALU_COMMENDS
 {
-	ADD = 0,
-	SUB = 1,
-	DIV = 2,
-	MOD = 3,
-	MUL = 4,
+	ADD,
+	SUB,
+	DIV,
+	MOD,
+	MUL,
 
-	AND = 5,
-	NAND = 6,
-	OR = 7,
-	NOR = 8,
-	XOR = 9,
-	XNOR = 10,
-	NOT = 11,
+	AND,
+	NAND,
+	OR,
+	NOR,
+	XOR,
+	XNOR,
+	NOT,
 
-	POW = 12,
-	SQRT = 13,
+	POW,
+	SQRT,
 
-	SHIFTLEFT = 14,
-	SHIFTRIGHT = 15,
+	SHIFTLEFT,
+	SHIFTRIGHT,
 
-	EQUAL = 16,
-	NOTEQUAL = 17,
-	LESS = 18,
-	GRATER = 19,
-	LESSEQUAL = 20,
-	GRATEREQUAL = 21,
+	EQUAL,
+	NOTEQUAL,
+	LESS,
+	GRATER,
+	LESSEQUAL,
+	GRATEREQUAL,
 	
 	/*
-	STRINGEQUAL = 22,
-	STRINGNOTEQUAL = 23,
-	STRINGLESS = 24,
-	STRINGGRATER = 25,
-	STRINGLESSEQUAL = 26,
-	STRINGGRATEREQUAL = 27,
+	STRINGEQUAL,
+	STRINGNOTEQUAL,
+	STRINGLESS,
+	STRINGGRATER,
+	STRINGLESSEQUAL,
+	STRINGGRATEREQUAL,
 	*/
 	
-	TOBOOLEAN = 28
+	TOBOOLEAN
 };
 
 

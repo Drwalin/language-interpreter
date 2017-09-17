@@ -192,12 +192,16 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			else if( com == "push" )
 			{
 				READ_STRING_CONTINUE;
-				auto it = variables.find( (com[0]=='&') ? com.c_str()+1 : com );
+				auto it = variables.find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
 				if( it != variables.end() )
 				{
 					if( com[0] == '&' )
 					{
 						PUSH_DATA_COMMAND( PUSHADRESSGLOBAL );
+					}
+					else if( com[0] == '*' )
+					{
+						PUSH_DATA_COMMAND( PUSHADRESSVALUEGLOBAL );
 					}
 					else
 					{
@@ -276,6 +280,14 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				
 			}*/
+			else if( com == "allocmem" )
+			{
+				PUSH_DATA_COMMAND( ALLOCATEMEMORY );
+			}
+			else if( com == "freemem" )
+			{
+				PUSH_DATA_COMMAND( FREEMEMORY );
+			}
 			else if( com == "jump" )
 			{
 				READ_STRING_CONTINUE;

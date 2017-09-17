@@ -37,20 +37,40 @@ int MyAssemblyLang::DoOnce()
 			pointer += 8;
 		}
 		break;
-	case PUSHADRESSGLOBAL:
-		PushValue( GetIntFrom( pointer ) );
+	case PUSHADRESSVALUEGLOBAL:
+		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( pointer ) ) ) );
 		pointer += 8;
 		break;
 	case PUSHGLOBAL:
 		PushValue( GetIntFrom( GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
-	case PUSHCONST:
+	case PUSHADRESSGLOBAL:
 		PushValue( GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
 	case POPGLOBAL:
 		SetIntAt( PopValue(), GetIntFrom( pointer ) );
+		pointer += 8;
+		break;
+	case PUSHADRESSVALUELOCAL:
+		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( localVariableOffset + pointer ) ) ) );
+		pointer += 8;
+		break;
+	case PUSHLOCAL:
+		PushValue( GetIntFrom( GetIntFrom( localVariableOffset + pointer ) ) );
+		pointer += 8;
+		break;
+	case PUSHADRESSLOCAL:
+		PushValue( GetIntFrom( localVariableOffset + pointer ) );
+		pointer += 8;
+		break;
+	case POPLOCAL:
+		SetIntAt( PopValue(), GetIntFrom( localVariableOffset + pointer ) );
+		pointer += 8;
+		break;
+	case PUSHCONST:
+		PushValue( GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
 	case PRINTINTNEWLINE:
@@ -62,6 +82,13 @@ int MyAssemblyLang::DoOnce()
 		temp = 0;
 		std::cin >> temp;
 		PushValue( (uint64)temp );
+		break;
+	case ALLOCATEMEMORY:
+		PushValue( AllocateMemory( PopValue() ) );
+		break;
+	case FREEMEMORY:
+		temp1 = PopValue(); temp2 = PopValue();
+		FreeMemory( temp2, temp1 );
 		break;
 	case ALU:
 		switch( data[pointer++] )
