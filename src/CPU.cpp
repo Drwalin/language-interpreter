@@ -6,6 +6,7 @@
 
 int MyAssemblyLang::DoOnce()
 {
+	//std::cout << "\n pointer = " << pointer << " :: " << (unsigned int)data[pointer] << "   ";
 	++counterActions;
 	int64 temp1, temp2, temp;
 	double dtemp1, dtemp2, dtemp3;
@@ -53,6 +54,10 @@ int MyAssemblyLang::DoOnce()
 		SetIntAt( PopValue(), GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
+	case POPGLOBALADRESS:
+		SetIntAt( PopValue(), GetIntFrom( GetIntFrom( pointer ) ) );
+		pointer += 8;
+		break;
 	case PUSHADRESSVALUELOCAL:
 		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( localVariableOffset + pointer ) ) ) );
 		pointer += 8;
@@ -67,6 +72,10 @@ int MyAssemblyLang::DoOnce()
 		break;
 	case POPLOCAL:
 		SetIntAt( PopValue(), GetIntFrom( localVariableOffset + pointer ) );
+		pointer += 8;
+		break;
+	case POPLOCALADRESS:
+		SetIntAt( PopValue(), GetIntFrom( GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
 	case PUSHCONST:

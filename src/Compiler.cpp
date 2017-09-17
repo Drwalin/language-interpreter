@@ -235,6 +235,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "pop" )
 			{
+				/*
 				READ_STRING_CONTINUE;
 				auto it = variables.find( com );
 				if( it != variables.end() )
@@ -254,6 +255,45 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					printf( "\n Undefined pop argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
 					getchar();
 					return;
+				}
+				*/
+				
+				READ_STRING_CONTINUE;
+				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables.end() )
+				{
+					if( com[0] == '*' )
+					{
+						PUSH_DATA_COMMAND( POPGLOBALADRESS );
+					}
+					else
+					{
+						PUSH_DATA_COMMAND( POPGLOBAL );
+					}
+					variablePointer[data.size()] = it->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					int err = 0;
+					int64 temp = MyAssemblyLang::GetInt64FromString( com, err );
+					if( err )
+					{
+						printf( "\n Undefined pop argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
+						getchar();
+						return;
+					}
+					else
+					{
+						PUSH_DATA_COMMAND( PUSHCONST );
+						PUSH_UINT64_TO_DATA(temp);
+					}
 				}
 			}/*
 			else if( com == "fileopen" )
