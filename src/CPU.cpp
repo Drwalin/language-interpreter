@@ -9,6 +9,7 @@ int MyAssemblyLang::DoOnce()
 	++counterActions;
 	int64 temp1, temp2, temp;
 	double dtemp1, dtemp2, dtemp3;
+	uint64 utemp1, utemp2, utemp3;
 	switch( data[pointer++] )
 	{
 	case END:
@@ -41,10 +42,19 @@ int MyAssemblyLang::DoOnce()
 		
 		
 	case CALL:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+		PushValue( pointer );	// pointer
+		pointer = GetIntFrom( pointer );
+		PushValue( localVariableOffset );	// utemp2
+		utemp1 = GetIntFrom( pointer );
+		localVariableOffset = AllocateMemory( utemp1 );
+		PushValue( utemp1 );	// utemp1
+		pointer += 8;
 		break;
 	case RET:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
+		utemp1 = PopValue();
+		FreeMemory( localVariableOffset, utemp1 );
+		localVariableOffset = PopValue();
+		pointer = PopValue();
 		break;
 		
 		
