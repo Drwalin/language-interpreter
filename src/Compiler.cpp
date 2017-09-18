@@ -328,6 +328,14 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( FREEMEMORY );
 			}
+			else if( com == "reservemem" )
+			{
+				PUSH_DATA_COMMAND( RESERVEMEMORY );
+			}
+			else if( com == "freereservedmem" )
+			{
+				PUSH_DATA_COMMAND( FREERESERVEDMEMORY );
+			}
 			else if( com == "jump" )
 			{
 				READ_STRING_CONTINUE;
@@ -528,7 +536,11 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( SCANINTKEYBOARD );
 			}
-			else if( com == "" )
+			else if( com == "" || com == "code_end__" )
+			{
+				break;
+			}
+			else
 			{
 				break;
 			}
@@ -553,6 +565,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 		getchar();
 		return;
 	}
+	data.resize( data.size()+1 );
 }
 
 

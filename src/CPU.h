@@ -49,6 +49,8 @@ public:
 	
 	uint64 AllocateMemory( uint64 size );
 	void FreeMemory( uint64 beg, uint64 size );
+	void ReserveMemory( uint64 size );
+	void FreeReservedMemory();
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
@@ -114,9 +116,11 @@ enum MAIN_COMMENDS
 	
 	ALLOCATEMEMORY,
 	FREEMEMORY,
+	RESERVEMEMORY,
+	FREERESERVEDMEMORY,
 	
 	PRINTINTNEWLINE,		/////////////////////////////////////////////////////
-	SCANINTKEYBOARD,		/////////////////////////////////////////////////////
+	SCANINTKEYBOARD			/////////////////////////////////////////////////////
 	
 	/*
 	STRINGLENGTH,

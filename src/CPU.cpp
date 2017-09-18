@@ -6,7 +6,6 @@
 
 int MyAssemblyLang::DoOnce()
 {
-	//std::cout << "\n pointer = " << pointer << " :: " << (unsigned int)data[pointer] << "   ";
 	++counterActions;
 	int64 temp1, temp2, temp;
 	double dtemp1, dtemp2, dtemp3;
@@ -98,6 +97,12 @@ int MyAssemblyLang::DoOnce()
 	case FREEMEMORY:
 		temp1 = PopValue(); temp2 = PopValue();
 		FreeMemory( temp2, temp1 );
+		break;
+	case RESERVEMEMORY:
+		ReserveMemory( PopValue() );
+		break;
+	case FREERESERVEDMEMORY:
+		FreeReservedMemory();
 		break;
 	case ALU:
 		switch( data[pointer++] )
