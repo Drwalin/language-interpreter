@@ -36,13 +36,11 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 	std::map < std::map < std::string, uint64 > > variables;				// name - pointer
 	std::map < std::map < uint64, uint64 > > variableId_variable;			// id - machine code pointer
 	std::map < std::map < uint64, uint64 > > variablePointer;				// in code pointer to place were it's used - id
-	std::map < std::string, uint64 > variablesCounter;						// function name - counter
 	
 	std::map < std::string, uint64 > functions;					// name - pointer
 	std::map < uint64, uint64 > functionId_function;			// id - machine code pointer
 	std::map < uint64, uint64 > functionPointer;				// in code pointer to place were it's used - id
-	//////////////////////////////////////////////////////////////////////////////////
-	std::map < std:string, uint64 > localVariablesBytes;							// id - bytes number for local variables
+	std::map < std::string, uint64 > variablesCounter;			// function name - counter
 	
 	std::ifstream code;
 	code.open( fileName );
@@ -229,16 +227,47 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					getchar();
 					return;
 				}
-			}/*
-			else if( com == "func" )
-			{
-				
 			}
-			else if( com == "endfunc" )
+			else if( com == "func" )		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
-			
-			}*/
-			else if( com == "end" )		//////////////////////
+				READ_STRING_CONTINUE;
+				currentFunction = com;
+				functionId_function[functions[currentFunction]] = data.size();
+				data.resize( data.size()+8 );
+				SetIntAt( variablesCounter[currentFunction]<<3, data.size()-8 );
+			}
+			else if( com == "endfunc" )		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			{
+				currentFunction = "";
+			}
+			else if( com == "call" )		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			{
+				READ_STRING_CONTINUE;
+				auto it = functions.find( com );
+				if( it != functions.end() )
+				{
+					PUSH_DATA_COMMAND( CALL );
+					functionPointer[data.size()] = it->second;
+					printf( "\n Function used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else
+				{
+					printf( "\n Undefined call argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
+					getchar();
+					return;
+				}
+			}
+			else if( com == "ret" )			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			{
+				PUSH_DATA_COMMAND( RET );
+			}
+			else if( com == "end" )			///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
 				PUSH_DATA_COMMAND( END );
 			}
@@ -247,7 +276,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				READ_STRING_CONTINUE;
 				auto it = variables[currentFunction].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
 				auto it_ = variables[""].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables[currentFunction].end() && currentFunction != "" )
+				if( it != variables[currentFunction].end() && currentFunction != "" )			/////////////////////////////////////////////////////
 				{
 					if( com[0] == '&' )
 					{
@@ -315,7 +344,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				READ_STRING_CONTINUE;
 				auto it = variables[currentFunction].find( (com[0]=='*') ? com.c_str()+1 : com );
 				auto it_ = variables[""].find( (com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables[currentFunction].end() && currentFunction != "" )
+				if( it != variables[currentFunction].end() && currentFunction != "" )			/////////////////////////////////////////////////////
 				{
 					if( com[0] == '*' )
 					{
@@ -454,11 +483,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					getchar();
 					return;
 				}
-			}/*
-			else if( com == "move" )
-			{
-				
-			}*/
+			}
 			else if( com == "add" )
 			{
 				PUSH_DATA_COMMAND( ALU );
