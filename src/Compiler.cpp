@@ -29,25 +29,38 @@
 
 void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 {
-	std::map < std::string, uint64 > labels;				// name - id
-	std::map < uint64, uint64 > labelId_label;				// id - machine code pointer
-	std::map < uint64, uint64 > labelPointer;				// in code pointer to place were it's used - id
+	std::map < std::string, uint64 > labels;					// name - id
+	std::map < uint64, uint64 > labelId_label;					// id - machine code pointer
+	std::map < uint64, uint64 > labelPointer;					// in code pointer to place were it's used - id
 	
-	std::map < std::string, uint64 > variables;				// name - pointer
-	std::map < uint64, uint64 > variableId_variable;		// id - machine code pointer
-	std::map < uint64, uint64 > variablePointer;			// in code pointer to place were it's used - id
+	std::map < std::map < std::string, uint64 > > variables;				// name - pointer
+	std::map < std::map < uint64, uint64 > > variableId_variable;			// id - machine code pointer
+	std::map < std::map < uint64, uint64 > > variablePointer;				// in code pointer to place were it's used - id
+	std::map < std::string, uint64 > variablesCounter;						// function name - counter
+	
+	std::map < std::string, uint64 > functions;					// name - pointer
+	std::map < uint64, uint64 > functionId_function;			// id - machine code pointer
+	std::map < uint64, uint64 > functionPointer;				// in code pointer to place were it's used - id
+	//////////////////////////////////////////////////////////////////////////////////
+	std::map < std:string, uint64 > localVariablesBytes;							// id - bytes number for local variables
 	
 	std::ifstream code;
 	code.open( fileName );
 	if( code.good() )
 	{
-		uint64 labelsCounter = 0, variablesCounter = 0;
-		std::string com;
+		std::string currentFunction = "";
+		uint64 labelsCounter = 0, variablesCounter = 0, functionsCounter = 0;
+		std::string com, type;
+		char * fastData = new char[4096];
 		while( true )
 		{
 			READ_STRING_BREAK;
 			
-			if( com == "label" )
+			if( com[0] == '/' && com[1] == '/' )
+			{
+				file.getline( com, 4095 );
+			}
+			else if( com == "label" )
 			{
 				READ_STRING_BREAK;
 				labels[com] = labelsCounter;
@@ -56,24 +69,45 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			else if( com == "var" )
 			{
 				READ_STRING_BREAK;	// var type
+				type = com;
 				READ_STRING_BREAK;	// var name
-				variables[com] = variablesCounter;
-				++variablesCounter;
-			}/*
+				variables[currentFunction][com] = variablesCounter[currentFunction];
+				++variablesCounter[currentFunction];
+				if( currentFunction == "" )
+				{
+					READ_STRING_BREAK;	// var value
+					if( type == "bytes" )
+						READ_STRING_BREAK;	// bytes number for type "bytes"
+				}
+			}
 			else if( com == "func" )
 			{
-				
-			}*/
+				localVariablesCounter = 0;
+				READ_STRING_BREAK;	// var name
+				currentFunction = com;
+				functions[com] = functionsCounter;
+				++functionsCounter;
+			}
+			else if( com == "endfunc" )
+			{
+				currentFunction = "";
+				localVariablesCounter = 0;
+			}
 		}
 		
 		code.seekg( 0, code.beg );
+		currentFunction = "";
 		
 		while( true )
 		{
 			com = "";
 			READ_STRING_BREAK;
 			
-			if( com == "label" )
+			if( com[0] == '/' && com[1] == '/' )
+			{
+				file.getline( com, 4095 );
+			}
+			else if( com == "label" )
 			{
 				READ_STRING_CONTINUE;
 				auto it = labels.find(com);
@@ -94,84 +128,99 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				READ_STRING_CONTINUE;
 				std::string varType = com;
 				READ_STRING_CONTINUE;
-				auto it = variables.find( com );
-				if( it != variables.end() )
+				auto it = variables[currentFunction].find( com );
+				if( it != variables[currentFunction].end() )
 				{
-					variableId_variable[it->second] = data.size();
-					printf( "\n Variable: \"%s\"  pointer: %lli ", com.c_str(), (int64)data.size() );
-					if( varType == "string" )
+					if( currentFunction == "" )
 					{
-						READ_STRING_CONTINUE;
-						if( false )
+						variableId_variable[currentFunction][it->second] = data.size();
+						printf( "\n Variable: \"%s\"  pointer: %lli ", com.c_str(), (int64)data.size() );
+						if( varType == "string" )
 						{
-							VAR_STRING_FORMAT_ERROR:
-								printf( "\n Undefined string format \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
-								getchar();
-								return;
-						}
-						else
-						{
-							if( com[0] == '\"' && com[com.size()-1] == '\"' )
+							READ_STRING_CONTINUE;
+							if( false )
 							{
-								std::string dst;
-								uint64 temp, temp1, temp2;
-								for( temp = 1; temp+1 < com.size(); ++temp )
+								VAR_STRING_FORMAT_ERROR:
+									printf( "\n Undefined string format \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
+									getchar();
+									return;
+							}
+							else
+							{
+								if( com[0] == '\"' && com[com.size()-1] == '\"' )
 								{
-									if( com[temp] == '\\' )
+									std::string dst;
+									uint64 temp, temp1, temp2;
+									for( temp = 1; temp+1 < com.size(); ++temp )
 									{
-										switch( com[++temp] )
+										if( com[temp] == '\\' )
 										{
-										case 't':
-											dst += "\t";
-											break;
-										case 'n':
-											dst += "\n";
-											break;
-										case '\\':
-											dst += "\\";
-											break;
-										default:
-											goto VAR_STRING_FORMAT_ERROR;
+											switch( com[++temp] )
+											{
+											case 't':
+												dst += "\t";
+												break;
+											case 'n':
+												dst += "\n";
+												break;
+											case '\\':
+												dst += "\\";
+												break;
+											default:
+												goto VAR_STRING_FORMAT_ERROR;
+											}
+										}
+										else
+										{
+											dst.push_back( com[temp] );
 										}
 									}
-									else
+									temp1 = data.size();
+									data.resize( temp1+dst.size()+1 );
+									data.back() = 0;
+									for( temp2 = 0; temp2 < dst.size(); ++temp2 )
 									{
-										dst.push_back( com[temp] );
+										data[temp1+temp2] = dst[temp2];
 									}
-								}
-								temp1 = data.size();
-								data.resize( temp1+dst.size()+1 );
-								data.back() = 0;
-								for( temp2 = 0; temp2 < dst.size(); ++temp2 )
-								{
-									data[temp1+temp2] = dst[temp2];
 								}
 							}
 						}
-					}
-					else if( varType == "int" )
-					{
-						int64 temp = 0;
-						code >> temp;
-						PUSH_UINT64_TO_DATA(temp);
-					}
-					else if( varType == "bytes" )
-					{
-						byte temp;
-						uint64 temp1 = 0, temp2 = 0, temp3;
-						code >> temp1;
-						code >> temp2;
-						temp = (byte)temp1;
-						temp1 = data.size();
-						data.resize( temp1 + temp2 );
-						for( temp3 = 0; temp3 < temp2; ++temp3 )
-							data[temp1+temp3] = temp;
+						else if( varType == "int" )
+						{
+							int64 temp = 0;
+							code >> temp;
+							PUSH_UINT64_TO_DATA(temp);
+						}
+						else if( varType == "bytes" )
+						{
+							byte temp;
+							uint64 temp1 = 0, temp2 = 0, temp3;
+							code >> temp1;
+							code >> temp2;
+							temp = (byte)temp1;
+							temp1 = data.size();
+							data.resize( temp1 + temp2 );
+							for( temp3 = 0; temp3 < temp2; ++temp3 )
+								data[temp1+temp3] = temp;
+						}
+						else
+						{
+							printf( "\n Undefined variable type \"%s\"  at byte: %i", varType.c_str(), (int)code.tellg() );
+							getchar();
+							return;
+						}
 					}
 					else
 					{
-						printf( "\n Undefined variable type \"%s\"  at byte: %i", varType.c_str(), (int)code.tellg() );
-						getchar();
-						return;
+						variableId_variable[currentFunction][it->second] = variables[currentFunction][com]<<3;
+						printf( "\n local variable: \"%s\"  pointer: %lli ", com.c_str(), (int64)(variables[currentFunction][com]<<3) );
+						if( varType != "int" )
+						{
+							printf( "\n Undefined variable type \"%s\"  at byte: %i\n Error: local variables can be only \"int\" and can not have value", varType.c_str(), (int)code.tellg() );
+							getchar();
+							return;
+						}
+						
 					}
 				}
 				else
@@ -184,6 +233,10 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			else if( com == "func" )
 			{
 				
+			}
+			else if( com == "endfunc" )
+			{
+			
 			}*/
 			else if( com == "end" )		//////////////////////
 			{
@@ -192,8 +245,32 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			else if( com == "push" )
 			{
 				READ_STRING_CONTINUE;
-				auto it = variables.find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables.end() )
+				auto it = variables[currentFunction].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
+				auto it_ = variables[""].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables[currentFunction].end() && currentFunction != "" )
+				{
+					if( com[0] == '&' )
+					{
+						PUSH_DATA_COMMAND( PUSHADRESSLOCAL );
+					}
+					else if( com[0] == '*' )
+					{
+						PUSH_DATA_COMMAND( PUSHADRESSVALUELOCAL );
+					}
+					else
+					{
+						PUSH_DATA_COMMAND( PUSHLOCAL );
+					}
+					variablePointer[currentFunction][data.size()] = it->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					uint64 temp1 = data.size(), temp2;
+					data.resize( temp1 + 8 );
+					for( temp2 = 0; temp2 < 8; ++temp2 )
+					{
+						data[temp1+temp2] = 0;
+					}
+				}
+				else if( it_ != variables[""].end() )
 				{
 					if( com[0] == '&' )
 					{
@@ -207,7 +284,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					{
 						PUSH_DATA_COMMAND( PUSHGLOBAL );
 					}
-					variablePointer[data.size()] = it->second;
+					variablePointer[currentFunction][data.size()] = it->second;
 					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
@@ -235,13 +312,20 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "pop" )
 			{
-				/*
 				READ_STRING_CONTINUE;
-				auto it = variables.find( com );
-				if( it != variables.end() )
+				auto it = variables[currentFunction].find( (com[0]=='*') ? com.c_str()+1 : com );
+				auto it_ = variables[""].find( (com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables[currentFunction].end() && currentFunction != "" )
 				{
-					PUSH_DATA_COMMAND( POPGLOBAL );
-					variablePointer[data.size()] = it->second;
+					if( com[0] == '*' )
+					{
+						PUSH_DATA_COMMAND( POPLOCALADRESS );
+					}
+					else
+					{
+						PUSH_DATA_COMMAND( POPLOCAL );
+					}
+					variablePointer[currentFunction][data.size()] = it->second;
 					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
@@ -250,17 +334,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						data[temp1+temp2] = 0;
 					}
 				}
-				else
-				{
-					printf( "\n Undefined pop argument \"%s\"  at byte: %i", com.c_str(), (int)code.tellg() );
-					getchar();
-					return;
-				}
-				*/
-				
-				READ_STRING_CONTINUE;
-				auto it = variables.find( (com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables.end() )
+				if( it_ != variables[""].end() )
 				{
 					if( com[0] == '*' )
 					{
@@ -270,7 +344,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					{
 						PUSH_DATA_COMMAND( POPGLOBAL );
 					}
-					variablePointer[data.size()] = it->second;
+					variablePointer[currentFunction][data.size()] = it->second;
 					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
@@ -295,31 +369,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						PUSH_UINT64_TO_DATA(temp);
 					}
 				}
-			}/*
-			else if( com == "fileopen" )
-			{
-				
 			}
-			else if( com == "fileclose" )
-			{
-				
-			}
-			else if( com == "loadfromfile" )
-			{
-				
-			}
-			else if( com == "sevetofile" )
-			{
-				
-			}
-			else if( com == "getfilesize" )
-			{
-				
-			}
-			else if( com == "jumpfile" )
-			{
-				
-			}*/
 			else if( com == "allocmem" )
 			{
 				PUSH_DATA_COMMAND( ALLOCATEMEMORY );
@@ -518,11 +568,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( ALU );
 				PUSH_DATA_COMMAND( GRATEREQUAL );
-			}/*
-			else if( com == "comparestring" )
-			{
-				
-			}*/
+			}
 			else if( com == "tobool" )
 			{
 				PUSH_DATA_COMMAND( ALU );
@@ -545,6 +591,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				break;
 			}
 		}
+		
+		delete[] fastData;
 		
 		for( auto it = variablePointer.begin(); it != variablePointer.end(); *it++ )
 		{
