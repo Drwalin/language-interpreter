@@ -33,9 +33,9 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 	std::map < uint64, uint64 > labelId_label;					// id - machine code pointer
 	std::map < uint64, uint64 > labelPointer;					// in code pointer to place were it's used - id
 	
-	std::map < std::map < std::string, uint64 > > variables;				// name - pointer
-	std::map < std::map < uint64, uint64 > > variableId_variable;			// id - machine code pointer
-	std::map < std::map < uint64, uint64 > > variablePointer;				// in code pointer to place were it's used - id
+	std::map < std::string, std::map < std::string, uint64 > > variables;				// name - pointer
+	std::map < std::string, std::map < uint64, uint64 > > variableId_variable;			// id - machine code pointer
+	std::map < std::string, std::map < uint64, uint64 > > variablePointer;				// in code pointer to place were it's used - id
 	
 	std::map < std::string, uint64 > functions;					// name - pointer
 	std::map < uint64, uint64 > functionId_function;			// id - machine code pointer
@@ -46,8 +46,21 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 	code.open( fileName );
 	if( code.good() )
 	{
-		std::string currentFunction = "";
-		uint64 labelsCounter = 0, variablesCounter = 0, functionsCounter = 0;
+		//test
+		/*
+		{
+			char data__fast_dwa = 0;
+			code.read( &data__fast_dwa, 1 );
+			code.seekg( 0, code.beg );
+			std::cout << "\n Value = " << (int)data__fast_dwa;
+			printf( "\n Press any Key\n" );
+			getch();
+		}
+		*/
+		
+		std::string currentFunction = "NO_FUNCTION__";
+		currentFunction = "NO_FUNCTION__";
+		uint64 labelsCounter = 0, functionsCounter = 0;
 		std::string com, type;
 		char * fastData = new char[4096];
 		while( true )
@@ -56,7 +69,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			
 			if( com[0] == '/' && com[1] == '/' )
 			{
-				file.getline( com, 4095 );
+				code.getline( fastData, 4095 );
 			}
 			else if( com == "label" )
 			{
@@ -69,18 +82,29 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				READ_STRING_BREAK;	// var type
 				type = com;
 				READ_STRING_BREAK;	// var name
+				
+				printf( "\n Variable \"%s\" in function \"%s\"", com.c_str(), currentFunction.c_str() );
 				variables[currentFunction][com] = variablesCounter[currentFunction];
-				++variablesCounter[currentFunction];
-				if( currentFunction == "" )
+				
+				variablesCounter[currentFunction]++;
+				if( currentFunction == "NO_FUNCTION__" )
 				{
 					READ_STRING_BREAK;	// var value
-					if( type == "bytes" )
+					if( type == "string" )
+					{
+						while( com[com.size()-1] != '"' )
+						{
+							READ_STRING_BREAK
+						}
+					}
+					else if( type == "bytes" )
+					{
 						READ_STRING_BREAK;	// bytes number for type "bytes"
+					}
 				}
 			}
 			else if( com == "func" )
 			{
-				localVariablesCounter = 0;
 				READ_STRING_BREAK;	// var name
 				currentFunction = com;
 				functions[com] = functionsCounter;
@@ -88,13 +112,13 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			}
 			else if( com == "endfunc" )
 			{
-				currentFunction = "";
-				localVariablesCounter = 0;
+				printf( "\n \"%s\" - local variables counter: %i", currentFunction.c_str(), (int)(variablesCounter[currentFunction]) );
+				currentFunction = "NO_FUNCTION__";
 			}
 		}
 		
 		code.seekg( 0, code.beg );
-		currentFunction = "";
+		currentFunction = "NO_FUNCTION__";
 		
 		while( true )
 		{
@@ -103,7 +127,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			
 			if( com[0] == '/' && com[1] == '/' )
 			{
-				file.getline( com, 4095 );
+				code.getline( fastData, 4095 );
 			}
 			else if( com == "label" )
 			{
@@ -129,7 +153,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				auto it = variables[currentFunction].find( com );
 				if( it != variables[currentFunction].end() )
 				{
-					if( currentFunction == "" )
+					if( currentFunction == "NO_FUNCTION__" )
 					{
 						variableId_variable[currentFunction][it->second] = data.size();
 						printf( "\n Variable: \"%s\"  pointer: %lli ", com.c_str(), (int64)data.size() );
@@ -233,12 +257,13 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				READ_STRING_CONTINUE;
 				currentFunction = com;
 				functionId_function[functions[currentFunction]] = data.size();
+				printf( "\n Function declared: \"%s\"  at byte (in code): %i", currentFunction.c_str(), data.size() );
 				data.resize( data.size()+8 );
 				SetIntAt( variablesCounter[currentFunction]<<3, data.size()-8 );
 			}
 			else if( com == "endfunc" )		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
-				currentFunction = "";
+				currentFunction = "NO_FUNCTION__";
 			}
 			else if( com == "call" )		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			{
@@ -275,8 +300,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				READ_STRING_CONTINUE;
 				auto it = variables[currentFunction].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
-				auto it_ = variables[""].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables[currentFunction].end() && currentFunction != "" )			/////////////////////////////////////////////////////
+				auto it_ = variables["NO_FUNCTION__"].find( (com[0]=='&'||com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables[currentFunction].end() && currentFunction != "NO_FUNCTION__" )			/////////////////////////////////////////////////////
 				{
 					if( com[0] == '&' )
 					{
@@ -291,7 +316,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						PUSH_DATA_COMMAND( PUSHLOCAL );
 					}
 					variablePointer[currentFunction][data.size()] = it->second;
-					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					printf( "\n local variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -299,7 +324,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						data[temp1+temp2] = 0;
 					}
 				}
-				else if( it_ != variables[""].end() )
+				else if( it_ != variables["NO_FUNCTION__"].end() )
 				{
 					if( com[0] == '&' )
 					{
@@ -313,8 +338,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					{
 						PUSH_DATA_COMMAND( PUSHGLOBAL );
 					}
-					variablePointer[currentFunction][data.size()] = it->second;
-					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					variablePointer["NO_FUNCTION__"][data.size()] = it_->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it_->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -343,8 +368,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				READ_STRING_CONTINUE;
 				auto it = variables[currentFunction].find( (com[0]=='*') ? com.c_str()+1 : com );
-				auto it_ = variables[""].find( (com[0]=='*') ? com.c_str()+1 : com );
-				if( it != variables[currentFunction].end() && currentFunction != "" )			/////////////////////////////////////////////////////
+				auto it_ = variables["NO_FUNCTION__"].find( (com[0]=='*') ? com.c_str()+1 : com );
+				if( it != variables[currentFunction].end() && currentFunction != "NO_FUNCTION__" )			/////////////////////////////////////////////////////
 				{
 					if( com[0] == '*' )
 					{
@@ -355,7 +380,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						PUSH_DATA_COMMAND( POPLOCAL );
 					}
 					variablePointer[currentFunction][data.size()] = it->second;
-					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					printf( "\n local variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -363,7 +388,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 						data[temp1+temp2] = 0;
 					}
 				}
-				if( it_ != variables[""].end() )
+				else if( it_ != variables["NO_FUNCTION__"].end() )
 				{
 					if( com[0] == '*' )
 					{
@@ -373,8 +398,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					{
 						PUSH_DATA_COMMAND( POPGLOBAL );
 					}
-					variablePointer[currentFunction][data.size()] = it->second;
-					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it->second) );
+					variablePointer["NO_FUNCTION__"][data.size()] = it_->second;
+					printf( "\n variable used in place: %lli  with id: %lli", (int64)data.size(), (int64)(it_->second) );
 					uint64 temp1 = data.size(), temp2;
 					data.resize( temp1 + 8 );
 					for( temp2 = 0; temp2 < 8; ++temp2 )
@@ -607,7 +632,7 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 			{
 				PUSH_DATA_COMMAND( SCANINTKEYBOARD );
 			}
-			else if( com == "" || com == "code_end__" )
+			else if( com == " " || com == "code_end__" )
 			{
 				break;
 			}
@@ -619,16 +644,25 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 		
 		delete[] fastData;
 		
-		for( auto it = variablePointer.begin(); it != variablePointer.end(); *it++ )
+		for( auto f_it_ = variablePointer.begin(); f_it_ != variablePointer.end(); *f_it_++ )
 		{
-			printf( "\n Variable used in point: %lli  should be: %lli", (int64)(it->first), (int64)(variableId_variable[it->second]) );
-			SetIntAt( variableId_variable[it->second], it->first );
+			for( auto it = f_it_->second.begin(); it != f_it_->second.end(); *it++ )
+			{
+				printf( "\n Variable used in function \"%s\" point: %lli  should be: %lli", f_it_->first.c_str(), (int64)(it->first), (int64)(variableId_variable[f_it_->first][it->second]) );
+				SetIntAt( variableId_variable[f_it_->first][it->second], it->first );
+			}
 		}
 		
 		for( auto it = labelPointer.begin(); it != labelPointer.end(); *it++ )
 		{
 			printf( "\n Jump used in point: %lli  should be: %lli", (int64)(it->first), (int64)(labelId_label[it->second]) );
 			SetIntAt( labelId_label[it->second], it->first );
+		}
+		
+		for( auto it = functionPointer.begin(); it != functionPointer.end(); *it++ )
+		{
+			printf( "\n Function used in point: %lli  should be: %lli", (int64)(it->first), (int64)(functionId_function[it->second]) );
+			SetIntAt( functionId_function[it->second], it->first );
 		}
 	}
 	else

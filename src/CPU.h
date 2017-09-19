@@ -54,6 +54,8 @@ public:
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
+	void Load( const char * fileName );
+	void Save( const char * fileName );
 
 	int DoOnce();
 	void Do( const uint64 count );

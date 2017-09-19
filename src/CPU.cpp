@@ -3,6 +3,7 @@
 
 #include "Compiler.cpp"
 #include "MethodsCPU.cpp"
+#include "SaveLoad.cpp"
 
 int MyAssemblyLang::DoOnce()
 {
@@ -80,23 +81,23 @@ int MyAssemblyLang::DoOnce()
 		pointer += 8;
 		break;
 	case PUSHADRESSVALUELOCAL:
-		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( localVariableOffset + pointer ) ) ) );
+		PushValue( GetIntFrom( GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) ) );
 		pointer += 8;
 		break;
 	case PUSHLOCAL:
-		PushValue( GetIntFrom( GetIntFrom( localVariableOffset + pointer ) ) );
+		PushValue( GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
 	case PUSHADRESSLOCAL:
-		PushValue( GetIntFrom( localVariableOffset + pointer ) );
+		PushValue( localVariableOffset + GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
 	case POPLOCAL:
-		SetIntAt( PopValue(), GetIntFrom( localVariableOffset + pointer ) );
+		SetIntAt( PopValue(), localVariableOffset + GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
 	case POPLOCALADRESS:
-		SetIntAt( PopValue(), GetIntFrom( GetIntFrom( pointer ) ) );
+		SetIntAt( PopValue(), GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
 	case PUSHCONST:
