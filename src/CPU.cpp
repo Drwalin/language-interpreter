@@ -44,19 +44,19 @@ int MyAssemblyLang::DoOnce()
 		
 		
 	case CALL:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		PushValue( pointer );	// pointer
+		functionCache.push_back( pointer );	// pointer
 		pointer = GetIntFrom( pointer );
-		PushValue( localVariableOffset );	// utemp2
+		functionCache.push_back( localVariableOffset );	// utemp2
 		utemp1 = GetIntFrom( pointer );
 		localVariableOffset = AllocateMemory( utemp1 );
-		PushValue( utemp1 );	// utemp1
+		functionCache.push_back( utemp1 );	// utemp1
 		pointer += 8;
 		break;
 	case RET:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		utemp1 = PopValue();
+		utemp1 = functionCache.back();functionCache.resize(functionCache.size()-1);
 		FreeMemory( localVariableOffset, utemp1 );
-		localVariableOffset = PopValue();
-		pointer = PopValue();
+		localVariableOffset = functionCache.back();functionCache.resize(functionCache.size()-1);
+		pointer = functionCache.back();functionCache.resize(functionCache.size()-1);
 		break;
 		
 		

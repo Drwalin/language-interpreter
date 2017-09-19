@@ -29,6 +29,7 @@ public:
 	uint64 counterActions;		// counter of iterations
 
 	std::vector < uint64 > freeMemoryMap;
+	std::vector < uint64 > functionCache;
 
 public:
 	
