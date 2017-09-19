@@ -38,7 +38,7 @@ void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 
 uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
 {
-	if( data.size() <= ptr+8 )
+	if( data.size() < ptr+8 )
 		return 0;
 	return *((uint64*)&(data[ptr]));
 }
