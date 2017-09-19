@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "ComplexCompiler.cpp"
 #include "Compiler.cpp"
 #include "MethodsCPU.cpp"
 #include "SaveLoad.cpp"
