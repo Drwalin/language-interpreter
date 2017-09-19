@@ -54,6 +54,7 @@ public:
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
+	void CompileComplexToPrimitive( const char * fileName, const char * fileNameAsm /*OUT*/ );
 	void Load( const char * fileName );
 	void Save( const char * fileName );
 
