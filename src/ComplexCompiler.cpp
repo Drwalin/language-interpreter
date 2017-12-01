@@ -120,60 +120,9 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 						continue;
 					}
 					
-					/*
-					for( ; i < usedNum; i+=2 )
-					{
-						out << "\npush " << cmd[i];
-						com = cmd[i-1];
-						if( com == "+" )
-							out << "\nadd";
-						else if( com == "-" )
-							out << "\nsub";
-						else if( com == "*" )
-							out << "\nmul";
-						else if( com == "/" )
-							out << "\ndiv";
-						else if( com == "%" )
-							out << "\nmod";
-						else if( com == "<<" )
-							out << "\nshiftleft";
-						else if( com == ">>" )
-							out << "\nshiftright";
-						else if( com == "&" )
-							out << "\nand";
-						else if( com == "!&" )
-							out << "\nnand";
-						else if( com == "|" )
-							out << "\nor";
-						else if( com == "!|" )
-							out << "\nnor";
-						else if( com == "^" )
-							out << "\nxor";
-						else if( com == "!^" )
-							out << "\nxnor";
-						else if( com == "!" )
-						{
-							out << "\nnot";
-						}
-						else if( com == "pow" )
-							out << "\npow";
-						else if( com == "==" )
-							out << "\nequal";
-						else if( com == "!=" )
-							out << "\nnotequal";
-						else if( com == "<" )
-							out << "\nless";
-						else if( com == "<=" )
-							out << "\nlessequal";
-						else if( com == ">" )
-							out << "\ngrater";
-						else if( com == ">=" )
-							out << "\ngraterequal";
-					}
-					*/
-					
 					if( cmd[1] == "=" )
 					{
+						usedNum++;
 						out << "\npop " << cmd[0] << "\n";
 					}
 					else if( cmd[0] == "if" )

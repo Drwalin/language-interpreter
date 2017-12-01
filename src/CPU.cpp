@@ -9,9 +9,11 @@
 int MyAssemblyLang::DoOnce()
 {
 	++counterActions;
-	int64 temp1, temp2, temp;
-	double dtemp1, dtemp2, dtemp3;
-	uint64 utemp1, utemp2, utemp3;
+	int64 temp, temp1, temp2;
+	double dtemp, dtemp1, dtemp2, dtemp3;
+	uint64 utemp, utemp1, utemp2, utemp3;
+	std::string stemp, stemp1, stemp2;
+	char ctemp;
 	switch( data[pointer++] )
 	{
 	case END:
@@ -51,12 +53,14 @@ int MyAssemblyLang::DoOnce()
 		localVariableOffset = AllocateMemory( utemp1 );
 		functionCache.push_back( utemp1 );	// utemp1
 		pointer += 8;
+		printf( "\n call" );
 		break;
 	case RET:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		utemp1 = functionCache.back();functionCache.resize(functionCache.size()-1);
 		FreeMemory( localVariableOffset, utemp1 );
 		localVariableOffset = functionCache.back();functionCache.resize(functionCache.size()-1);
 		pointer = functionCache.back();functionCache.resize(functionCache.size()-1);
+		printf( "\n ret" );
 		break;
 		
 		
@@ -105,14 +109,30 @@ int MyAssemblyLang::DoOnce()
 		PushValue( GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
-	case PRINTINTNEWLINE:
-		printf( "\n " );
-		std::cout << (int64)PopValue();
+	case PRINTCHAR:
+		printf( "%c", (char)PopValue() );
 		break;
-	case SCANINTKEYBOARD:
-		printf( "\n " );
+	case PRINTSTRING:
+		temp = PopValue();
+		printf( "\n printstring " );
+		std::cout << temp << " : ";
+		printf( "%s", (char*)(&data[temp]) );
+		break;
+	case PRINTINT:
+		printf( "%lli", (int64)PopValue() );
+		break;
+	case GETCHAR:
+		ctemp = ' ';
+		scanf( "%c", &ctemp );
+		PushValue( (uint64)ctemp );
+		break;
+	case GETSTRING:
+		printf( "\n getstring: " );
+		scanf( "%s", (char*)(&data[PopValue()]) );
+		break;
+	case GETINT:
 		temp = 0;
-		std::cin >> temp;
+		printf( "%lli", (int64*)(&temp) );
 		PushValue( (uint64)temp );
 		break;
 	case ALLOCATEMEMORY:
@@ -152,28 +172,28 @@ int MyAssemblyLang::DoOnce()
 			PushValue( uint64(temp2*temp1) );
 			break;
 		case AND:
-			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( uint64(temp2&temp1) );
+			utemp1 = PopValue(); utemp2 = PopValue();
+			PushValue( uint64(utemp2&utemp1) );
 			break;
 		case NAND:
-			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( ~uint64(temp2&temp1) );
+			utemp1 = PopValue(); utemp2 = PopValue();
+			PushValue( ~uint64(utemp2&utemp1) );
 			break;
 		case OR:
-			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( uint64(temp2|temp1) );
+			utemp1 = PopValue(); utemp2 = PopValue();
+			PushValue( uint64(utemp2|utemp1) );
 			break;
 		case NOR:
-			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( ~uint64(temp2|temp1) );
+			utemp1 = PopValue(); utemp2 = PopValue();
+			PushValue( ~uint64(utemp2|utemp1) );
 			break;
 		case XOR:
-			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( uint64(temp2^temp1) );
+			utemp1 = PopValue(); utemp2 = PopValue();
+			PushValue( uint64(utemp2^utemp1) );
 			break;
 		case XNOR:
 			temp1 = PopValue(); temp2 = PopValue();
-			PushValue( ~uint64(temp2^temp1) );
+			PushValue( ~uint64(utemp2^utemp1) );
 			break;
 		case NOT:
 			PushValue( ~PopValue() );
@@ -220,6 +240,44 @@ int MyAssemblyLang::DoOnce()
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2>=temp1) );
 			break;
+			
+		case STRINGEQUAL:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2==stemp1) );
+			break;
+		case STRINGNOTEQUAL:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2!=stemp1) );
+			break;
+		case STRINGLESS:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2<stemp1) );
+			break;
+		case STRINGGRATER:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2>stemp1) );
+			break;
+		case STRINGLESSEQUAL:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2<=stemp1) );
+			break;
+		case STRINGGRATEREQUAL:
+			stemp1 = stemp2 = "";
+			stemp1 = (char*)(&data[PopValue()]);
+			stemp2 = (char*)(&data[PopValue()]);
+			PushValue( uint64(stemp2>=stemp1) );
+			break;
+			
 		case TOBOOLEAN:
 			PushValue( uint64(PopValue()!=0) );
 			break;

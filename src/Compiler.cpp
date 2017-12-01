@@ -619,18 +619,64 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 				PUSH_DATA_COMMAND( ALU );
 				PUSH_DATA_COMMAND( GRATEREQUAL );
 			}
+			else if( com == "stringequal" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGEQUAL );
+			}
+			else if( com == "stringnotequal" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGNOTEQUAL );
+			}
+			else if( com == "stringless" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGLESS );
+			}
+			else if( com == "stringgrater" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGGRATER );
+			}
+			else if( com == "stringlessequal" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGLESSEQUAL );
+			}
+			else if( com == "stringgraterequal" )
+			{
+				PUSH_DATA_COMMAND( ALU );
+				PUSH_DATA_COMMAND( STRINGGRATEREQUAL );
+			}
 			else if( com == "tobool" )
 			{
 				PUSH_DATA_COMMAND( ALU );
 				PUSH_DATA_COMMAND( TOBOOLEAN );
 			}
-			else if( com == "printintnewline" )
+			else if( com == "printchar" )
 			{
-				PUSH_DATA_COMMAND( PRINTINTNEWLINE );
+				PUSH_DATA_COMMAND( PRINTCHAR );
 			}
-			else if( com == "scanintkeyboard" )
+			else if( com == "printstring" )
 			{
-				PUSH_DATA_COMMAND( SCANINTKEYBOARD );
+				PUSH_DATA_COMMAND( PRINTSTRING );
+			}
+			else if( com == "printint" )
+			{
+				PUSH_DATA_COMMAND( PRINTINT );
+			}
+			else if( com == "getchar" )
+			{
+				PUSH_DATA_COMMAND( GETCHAR );
+			}
+			else if( com == "getstring" )
+			{
+				PUSH_DATA_COMMAND( GETSTRING );
+			}
+			else if( com == "getint" )
+			{
+				PUSH_DATA_COMMAND( GETINT );
 			}
 			else if( com == " " || com == "code_end__" )
 			{
