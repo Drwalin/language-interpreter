@@ -1,7 +1,12 @@
 
 #pragma once
 
-int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
+void MyAssemblyLang::SetDebug( bool src )
+{
+	debug = src;
+}
+
+inline int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 {
 	err = 0;
 	int64 dst = 0;
@@ -28,7 +33,7 @@ int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 	return dst;
 }
 
-void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
+inline void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 {
 	uint64 a = 0;
 	if( data.size() <= ptr+8 )
@@ -36,10 +41,8 @@ void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 	*((uint64*)&(data[ptr])) = var;
 }
 
-uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
+inline uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
 {
-	if( data.size() < ptr+8 )
-		return 0;
 	return *((uint64*)&(data[ptr]));
 }
 
@@ -52,7 +55,7 @@ void MyAssemblyLang::End()
 	cache.clear();
 }
 
-void MyAssemblyLang::PushBytes( std::vector < byte > & src )
+inline void MyAssemblyLang::PushBytes( std::vector < byte > & src )
 {
 	register uint64 size = (((cacheOffset+1+src.size())>>12)+1)<<12;
 	if( size > cache.size() )
@@ -63,7 +66,7 @@ void MyAssemblyLang::PushBytes( std::vector < byte > & src )
 	}
 }
 
-void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
+inline void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 {
 	src.resize( count );
 	for( uint64 i = count-1; i < count; --i )
@@ -76,7 +79,7 @@ void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
 		cache.resize( size );
 }
 
-void MyAssemblyLang::PushValue( uint64 val )
+inline void MyAssemblyLang::PushValue( uint64 val )
 {
 	register uint64 size = (((cacheOffset+9)>>12)+1)<<12;
 	if( size > cache.size() )
@@ -85,7 +88,7 @@ void MyAssemblyLang::PushValue( uint64 val )
 	cacheOffset+=8;
 }
 
-void MyAssemblyLang::PopValue( uint64 & val )
+inline void MyAssemblyLang::PopValue( uint64 & val )
 {
 	cacheOffset-=8;
 	val = *((uint64*)&(cache[cacheOffset]));
@@ -94,7 +97,7 @@ void MyAssemblyLang::PopValue( uint64 & val )
 		cache.resize( size );
 }
 
-uint64 MyAssemblyLang::PopValue()
+inline uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
 	cacheOffset-=8;
@@ -105,7 +108,7 @@ uint64 MyAssemblyLang::PopValue()
 	return val;
 }
 
-void MyAssemblyLang::Clear()
+inline void MyAssemblyLang::Clear()
 {
 	End();
 	data.clear();
@@ -124,28 +127,6 @@ void MyAssemblyLang::Do( const uint64 count )
 
 uint64 MyAssemblyLang::AllocateMemory( uint64 size )
 {
-	/*
-	uint64 temp;
-	for( uint64 i = 0; i < freeMemoryMap.size(); i+=2 )
-	{
-		temp = freeMemoryMap[i+1]+1-freeMemoryMap[i];
-		if( temp == size )
-		{
-			temp = freeMemoryMap[i];
-			freeMemoryMap.erase( freeMemoryMap.begin()+i, freeMemoryMap.begin()+i+1 );
-			return temp;
-		}
-		else if( temp > size )
-		{
-			temp = freeMemoryMap[i];
-			freeMemoryMap[i] += size;
-			return temp;
-		}
-	}
-	uint64 ptr = data.size();
-	data.resize( ptr+size );
-	return ptr;
-	*/
 	uint64 temp;
 	for( uint64 i = 0; i+1 < freeMemoryMap.size(); i+=2 )
 	{
@@ -170,56 +151,6 @@ uint64 MyAssemblyLang::AllocateMemory( uint64 size )
 
 void MyAssemblyLang::FreeMemory( uint64 beg, uint64 size )
 {
-	/*
-	uint64 end = beg+size-1, i;
-	
-	if( freeMemoryMap.size() > 0 )
-	{
-		for( i = 0; i < freeMemoryMap.size(); i+=2 )
-		{
-			if( end < freeMemoryMap[i] )
-			{
-				freeMemoryMap.insert( freeMemoryMap.begin()+i, end );
-				freeMemoryMap.insert( freeMemoryMap.begin()+i, beg );
-				break;
-			}
-		}
-		if( i >= freeMemoryMap.size() )
-		{
-			freeMemoryMap.resize( freeMemoryMap.size() + 2 );
-			freeMemoryMap[ freeMemoryMap.size()-2 ] = beg;
-			freeMemoryMap[ freeMemoryMap.size()-2 ] = end;
-		}
-	}
-	else
-	{
-		freeMemoryMap.resize( 2 );
-		freeMemoryMap[0] = beg;
-		freeMemoryMap[1] = end;
-	}
-	
-	i = 0;
-	while( true )
-	{
-		if( i+2 >= freeMemoryMap.size() )
-			break;
-		if( freeMemoryMap[i+1]+1 >= freeMemoryMap[i+2] )
-		{
-			freeMemoryMap.erase( freeMemoryMap.begin()+i+1, freeMemoryMap.begin()+i+2 );
-			continue;
-		}
-		i+=2;
-	}
-	
-	if( freeMemoryMap.size() > 0 )
-	{
-		if( freeMemoryMap.back() >= data.size()-1 )
-		{
-			data.resize( freeMemoryMap[ freeMemoryMap.size()-2 ] );
-			freeMemoryMap.resize( freeMemoryMap.size()-2 );
-		}
-	}
-	*/
 	uint64 end = beg+size-1, i;
 	if( freeMemoryMap.size() > 0 )
 	{
@@ -269,14 +200,14 @@ void MyAssemblyLang::FreeMemory( uint64 beg, uint64 size )
 	}
 }
 
-void MyAssemblyLang::ReserveMemory( uint64 size )
+inline void MyAssemblyLang::ReserveMemory( uint64 size )
 {
 	uint64 size_d = data.size();
 	data.resize( size_d + size );
 	data.resize( size_d );
 }
 
-void MyAssemblyLang::FreeReservedMemory()
+inline void MyAssemblyLang::FreeReservedMemory()
 {
 	data.shrink_to_fit();
 }
@@ -284,6 +215,7 @@ void MyAssemblyLang::FreeReservedMemory()
 MyAssemblyLang::~MyAssemblyLang()
 {
 	Clear();
+	debug = true;
 }
 
 MyAssemblyLang::MyAssemblyLang()
@@ -292,6 +224,7 @@ MyAssemblyLang::MyAssemblyLang()
 	cacheOffset = 0;
 	localVariableOffset = 0;
 	pointer = 0;
+	debug = false;
 }
 
 

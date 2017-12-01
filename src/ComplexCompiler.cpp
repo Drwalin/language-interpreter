@@ -9,7 +9,7 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 	out.open( fileNameAsm );
 	if( code.good() && out.good() )
 	{
-		printf( "\n Good\n" );
+		if( debug ) printf( "\n Good\n" );
 		
 		std::vector < std::string > cmd;
 		cmd.resize( 100000 );
@@ -23,10 +23,9 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 			if( com == "" )
 				break;
 			cmd.push_back( com );
-			//printf( "\n %s", com.c_str() );
 		}
 		
-		printf( "\n Good\n" );
+		if( debug ) printf( "\n Good\n" );
 		
 		uint64 usedNum = 0, i = 0;
 		
@@ -57,7 +56,7 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 					for( i -= 1; i < usedNum; ++i )
 					{
 						com = cmd[i];
-						std::cout << "\n " << com;
+						if( debug ) std::cout << "\n " << com;
 						if( com == "+" )
 							com = "\nadd";
 						else if( com == "-" )
@@ -142,7 +141,7 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 				usedNum = 1;
 				out << cmd[0] << " ";
 			}
-			std::cout << "\n UseNum: " << usedNum << " :: " << cmd.size();
+			if( debug ) std::cout << "\n UseNum: " << usedNum << " :: " << cmd.size();
 			cmd.erase( cmd.begin(), cmd.begin()+usedNum );
 		}
 		

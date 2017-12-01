@@ -30,28 +30,32 @@ public:
 
 	std::vector < uint64 > freeMemoryMap;
 	std::vector < uint64 > functionCache;
+	
+	bool debug;
 
 public:
 	
-	static int64 GetInt64FromString( std::string str, int & err );
+	void SetDebug( bool src );
+	
+	static inline int64 GetInt64FromString( std::string str, int & err );
 	
 	void End();
 	
-	void SetIntAt( uint64 var, uint64 ptr );
-	uint64 GetIntFrom( uint64 ptr );
+	inline void SetIntAt( uint64 var, uint64 ptr );
+	inline uint64 GetIntFrom( uint64 ptr );
 	
 	// push -  allocate   4096 bytes blocks (if needed)
-	// pop - reallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
-	void PushBytes( std::vector < byte > & src );
-	void PopBytes( std::vector < byte > & src, uint64 count );
-	void PushValue( uint64 val );
-	void PopValue( uint64 & val );
-	uint64 PopValue();
+	// pop - deallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
+	inline void PushBytes( std::vector < byte > & src );
+	inline void PopBytes( std::vector < byte > & src, uint64 count );
+	inline void PushValue( uint64 val );
+	inline void PopValue( uint64 & val );
+	inline uint64 PopValue();
 	
 	uint64 AllocateMemory( uint64 size );
 	void FreeMemory( uint64 beg, uint64 size );
-	void ReserveMemory( uint64 size );
-	void FreeReservedMemory();
+	inline void ReserveMemory( uint64 size );
+	inline void FreeReservedMemory();
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );

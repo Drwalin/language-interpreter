@@ -53,14 +53,18 @@ int MyAssemblyLang::DoOnce()
 		localVariableOffset = AllocateMemory( utemp1 );
 		functionCache.push_back( utemp1 );	// utemp1
 		pointer += 8;
+#ifdef DEBUG
 		printf( "\n call" );
+#endif
 		break;
 	case RET:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		utemp1 = functionCache.back();functionCache.resize(functionCache.size()-1);
 		FreeMemory( localVariableOffset, utemp1 );
 		localVariableOffset = functionCache.back();functionCache.resize(functionCache.size()-1);
 		pointer = functionCache.back();functionCache.resize(functionCache.size()-1);
+#ifdef DEBUG
 		printf( "\n ret" );
+#endif
 		break;
 		
 		
@@ -114,8 +118,10 @@ int MyAssemblyLang::DoOnce()
 		break;
 	case PRINTSTRING:
 		temp = PopValue();
+#ifdef DEBUG
 		printf( "\n printstring " );
 		std::cout << temp << " : ";
+#endif
 		printf( "%s", (char*)(&data[temp]) );
 		break;
 	case PRINTINT:
@@ -127,12 +133,14 @@ int MyAssemblyLang::DoOnce()
 		PushValue( (uint64)ctemp );
 		break;
 	case GETSTRING:
+#ifdef DEBUG
 		printf( "\n getstring: " );
+#endif
 		scanf( "%s", (char*)(&data[PopValue()]) );
 		break;
 	case GETINT:
 		temp = 0;
-		printf( "%lli", (int64*)(&temp) );
+		scanf( "%lli", (int64*)(&temp) );
 		PushValue( (uint64)temp );
 		break;
 	case ALLOCATEMEMORY:
