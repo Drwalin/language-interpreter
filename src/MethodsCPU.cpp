@@ -35,14 +35,13 @@ inline int64 MyAssemblyLang::GetInt64FromString( std::string str, int & err )
 
 inline void MyAssemblyLang::SetIntAt( uint64 var, uint64 ptr )
 {
-	uint64 a = 0;
-	if( data.size() <= ptr+8 )
-		data.resize( ptr+8 );
 	*((uint64*)&(data[ptr])) = var;
 }
 
 inline uint64 MyAssemblyLang::GetIntFrom( uint64 ptr )
 {
+	if( ptr + 8 > data.size() )
+		std::cout << "   ::: GetIntFrom-" << ptr << " > " << data.size() << " :::   ";
 	return *((uint64*)&(data[ptr]));
 }
 
@@ -215,7 +214,7 @@ inline void MyAssemblyLang::FreeReservedMemory()
 MyAssemblyLang::~MyAssemblyLang()
 {
 	Clear();
-	debug = true;
+	debug = false;
 }
 
 MyAssemblyLang::MyAssemblyLang()

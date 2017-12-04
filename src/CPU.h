@@ -12,6 +12,7 @@
 #include <cstring>
 
 #include "GetSthFromString.cpp"
+#include "Array.cpp"
 
 typedef unsigned char byte;
 typedef unsigned long long int uint64;
@@ -20,19 +21,21 @@ typedef long long int int64;
 class MyAssemblyLang
 {
 public:
-
-	std::vector < byte > data;
-	std::vector < byte > cache;
-	uint64 cacheOffset, localVariableOffset;
+	
+	Array < byte > data;
+	Array < byte > cache;
+	
+	uint64 cacheOffset;
+	uint64 localVariableOffset;
 	uint64 pointer;
-	std::map < byte, std::fstream > file;
+	std::map < uint64, std::fstream > file;
 	uint64 counterActions;		// counter of iterations
-
+	
 	std::vector < uint64 > freeMemoryMap;
 	std::vector < uint64 > functionCache;
 	
 	bool debug;
-
+	
 public:
 	
 	void SetDebug( bool src );
@@ -112,7 +115,8 @@ enum MAIN_COMMANDS
 	GETCHAR,
 	GETSTRING,
 	GETINT,
-//	GOTOXY,
+	GOTOXY,			// first push x, second push y
+	CLEARSCR,		// clear screen
 //	GETKEYBOARDBUFFERCHAR,
 	
 	CALL,

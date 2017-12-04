@@ -499,6 +499,10 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 					return;
 				}
 			}
+			else if( com == "gotoxy" )
+			{
+				PUSH_DATA_COMMAND( GOTOXY );
+			}
 			else if( com == "add" )
 			{
 				PUSH_DATA_COMMAND( ALU );
