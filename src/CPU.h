@@ -22,6 +22,13 @@ class MyAssemblyLang
 {
 public:
 	
+	int64 temp, temp1, temp2;
+	double dtemp, dtemp1, dtemp2, dtemp3;
+	uint64 utemp, utemp1, utemp2, utemp3;
+	std::string stemp, stemp1, stemp2;
+	char ctemp;
+	char * stempclear;
+	
 	Array < byte > data;
 	Array < byte > cache;
 	
@@ -40,25 +47,25 @@ public:
 	
 	void SetDebug( bool src );
 	
-	static inline int64 GetInt64FromString( std::string str, int & err );
+	static int64 GetInt64FromString( std::string str, int & err );
 	
 	void End();
 	
-	inline void SetIntAt( uint64 var, uint64 ptr );
-	inline uint64 GetIntFrom( uint64 ptr );
+	void SetIntAt( uint64 var, uint64 ptr );
+	uint64 GetIntFrom( uint64 ptr );
 	
 	// push -  allocate   4096 bytes blocks (if needed)
-	// pop - deallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
-	inline void PushBytes( std::vector < byte > & src );
-	inline void PopBytes( std::vector < byte > & src, uint64 count );
-	inline void PushValue( uint64 val );
-	inline void PopValue( uint64 & val );
-	inline uint64 PopValue();
+	// pop - reallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
+	void PushBytes( std::vector < byte > & src );
+	void PopBytes( std::vector < byte > & src, uint64 count );
+	void PushValue( uint64 val );
+	void PopValue( uint64 & val );
+	uint64 PopValue();
 	
 	uint64 AllocateMemory( uint64 size );
 	void FreeMemory( uint64 beg, uint64 size );
-	inline void ReserveMemory( uint64 size );
-	inline void FreeReservedMemory();
+	void ReserveMemory( uint64 size );
+	void FreeReservedMemory();
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
@@ -125,11 +132,11 @@ enum MAIN_COMMANDS
 	ALLOCATEMEMORY,
 	FREEMEMORY,
 	RESERVEMEMORY,
-	FREERESERVEDMEMORY
+	FREERESERVEDMEMORY,
 	
+	DATACOPY
 	/*
 	STRINGLENGTH,
-	DATACOPY
 	*/
 };
 

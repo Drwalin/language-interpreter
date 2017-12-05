@@ -130,14 +130,9 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 						usedNum += 2;
 					}
 				}
-				else	// place here other functions
+				else
 				{
 					usedNum = 1;
-					if( cmd[0] == "call" || cmd[0] == "var" || cmd[0] == "func" || cmd[0] == "label" || cmd[0] == "endfunc" || cmd[0] == "ret" || cmd[0] == "end" || cmd[0] == "gotoxy" || cmd[0] == "clearscr" || cmd[0] == "push" || cmd[0] == "pop" || cmd[0] == "allocmem" || cmd[0] == "free" || cmd[0] == "jump" || cmd[0] == "jumptrue" || cmd[0] == "jumpfalse" )
-						out << "\n";
-//					else if( cmd[0] == "fileopen" || cmd[0] == "fileclose" || cmd[0] == "filereadbyte" || cmd[0] == "filereadstring" || cmd[0] == "filereadint" || cmd[0] == "filesavebyte" || cmd[0] == "filesavestring" || cmd[0] == "filesaveint" || cmd[0] == "filegetsize" || cmd[0] == "filejump" || cmd[0] == "filegetpos" )
-//						out << "\n";
-					
 					out << cmd[0] << " ";
 				}
 			}

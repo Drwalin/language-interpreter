@@ -11,12 +11,6 @@
 int MyAssemblyLang::DoOnce()
 {
 	++counterActions;
-	static int64 temp, temp1, temp2;
-	static double dtemp, dtemp1, dtemp2, dtemp3;
-	static uint64 utemp, utemp1, utemp2, utemp3;
-	static std::string stemp, stemp1, stemp2;
-	static char ctemp;
-	static char * stempclear = NULL;
 	switch( data[pointer++] )
 	{
 	case GOTOXY:
@@ -37,8 +31,6 @@ int MyAssemblyLang::DoOnce()
 		getch();
 #endif
 		Gotoxy( 0, 0 );
-		if( stempclear != NULL )
-			delete[] stempclear;
 		stempclear = new char[512];
 		memset( stempclear, ' ', 311+1 );
 		*((unsigned long long int*)(&(stempclear[311]))) = 0;
@@ -102,17 +94,14 @@ int MyAssemblyLang::DoOnce()
 		
 		
 	case PUSHADRESSVALUEGLOBAL:
-		std::cout << "::--" << GetIntFrom( GetIntFrom( GetIntFrom( pointer ) ) ) << "--::";
 		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( pointer ) ) ) );
 		pointer += 8;
 		break;
 	case PUSHGLOBAL:
-		std::cout << "::--" << GetIntFrom( GetIntFrom( pointer ) ) << "--::";
 		PushValue( GetIntFrom( GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
 	case PUSHADRESSGLOBAL:
-		std::cout << "::--" << GetIntFrom( pointer ) << "--::";
 		PushValue( GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
@@ -125,17 +114,14 @@ int MyAssemblyLang::DoOnce()
 		pointer += 8;
 		break;
 	case PUSHADRESSVALUELOCAL:
-		std::cout << "::--" << GetIntFrom( GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) ) << "--::";
 		PushValue( GetIntFrom( GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) ) );
 		pointer += 8;
 		break;
 	case PUSHLOCAL:
-		std::cout << "::--" << GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) << "--::";
 		PushValue( GetIntFrom( localVariableOffset + GetIntFrom( pointer ) ) );
 		pointer += 8;
 		break;
 	case PUSHADRESSLOCAL:
-		std::cout << "::--" << localVariableOffset + GetIntFrom( pointer ) << "--::";
 		PushValue( localVariableOffset + GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
@@ -174,14 +160,7 @@ int MyAssemblyLang::DoOnce()
 #ifdef DEBUG
 		printf( ":getstring:" );
 #endif
-		utemp = PopValue();
-		std::cout << "::scanf-" << utemp << "-" << data.size() << "-::";
-		//printf( "::scanf-%LLd-%LLd-::", utemp, (unsigned long long int)data.size() );
-		scanf( "%s", (char*)(&(data[utemp]) ) );
-		//scanf( "%s", (char*)(&(data[PopValue()])) );
-#ifdef DEBUG
-		printf( ":getstring-done:" );
-#endif
+		scanf( "%s", (char*)(&(data[PopValue()])) );
 		break;
 	case GETINT:
 		temp = 0;
@@ -201,6 +180,20 @@ int MyAssemblyLang::DoOnce()
 	case FREERESERVEDMEMORY:
 		FreeReservedMemory();
 		break;
+		
+		
+		
+		
+	case DATACOPY:
+		utemp3 = PopValue();
+		utemp1 = PopValue();	// destiny
+		utemp2 = PopValue();	// source
+		memmove( data.begin() + utemp1, data.begin() + utemp2, utemp3 );
+		break;
+		
+		
+		
+		
 	case ALU:
 		switch( data[pointer++] )
 		{
