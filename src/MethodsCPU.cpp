@@ -55,56 +55,33 @@ void MyAssemblyLang::End()
 	cache.clear();
 }
 
-inline void MyAssemblyLang::PushBytes( std::vector < byte > & src )
+inline void MyAssemblyLang::PushBytes( Array < byte > & src )
 {
-	register uint64 size = (((cacheOffset+1+src.size())>>12)+1)<<12;
-	if( size > cache.size() )
-		cache.resize( size );
-	for( uint64 i = 0; i < src.size(); ++i )
-	{
-		cache[++cacheOffset] = src[i];
-	}
+	cache.insert( cache.size(), src.begin(), src.size() );
 }
 
-inline void MyAssemblyLang::PopBytes( std::vector < byte > & src, uint64 count )
+inline void MyAssemblyLang::PopBytes( Array < byte > & src, uint64 count )
 {
-	src.resize( count );
-	for( uint64 i = count-1; i < count; --i )
-	{
-		src[i] = cache[cacheOffset];
-		cacheOffset--;
-	}
-	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
-	if( size < cache.size() )
-		cache.resize( size );
+	src.insert( src.size(), cache.end() - count, count );
+	cache.resize( cache.size() - count );
 }
 
 inline void MyAssemblyLang::PushValue( uint64 val )
 {
-	register uint64 size = (((cacheOffset+9)>>12)+1)<<12;
-	if( size > cache.size() )
-		cache.resize( size );
-	*((uint64*)&(cache[cacheOffset])) = val;
-	cacheOffset+=8;
+	cache.insert( cache.size(), (byte*)(&val), sizeof(uint64) );
 }
 
 inline void MyAssemblyLang::PopValue( uint64 & val )
 {
-	cacheOffset-=8;
-	val = *((uint64*)&(cache[cacheOffset]));
-	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
-	if( size < cache.size() )
-		cache.resize( size );
+	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+	cache.resize( cache.size() - sizeof(val) );
 }
 
 inline uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
-	cacheOffset-=8;
-	val = *((uint64*)&(cache[cacheOffset]));
-	register uint64 size = (((cacheOffset+1)>>12)+1)<<12;
-	if( size < cache.size() )
-		cache.resize( size );
+	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+	cache.resize( cache.size() - sizeof(val) );
 	return val;
 }
 
@@ -215,13 +192,12 @@ inline void MyAssemblyLang::FreeReservedMemory()
 MyAssemblyLang::~MyAssemblyLang()
 {
 	Clear();
-	debug = true;
+	debug = false;
 }
 
 MyAssemblyLang::MyAssemblyLang()
 {
 	counterActions = 0;
-	cacheOffset = 0;
 	localVariableOffset = 0;
 	pointer = 0;
 	debug = false;

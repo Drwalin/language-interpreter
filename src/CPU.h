@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <cstring>
+#include <cstdlib>
 
 #include "GetSthFromString.cpp"
 #include "Array.cpp"
@@ -32,7 +33,6 @@ public:
 	Array < byte > data;
 	Array < byte > cache;
 	
-	uint64 cacheOffset;
 	uint64 localVariableOffset;
 	uint64 pointer;
 	std::map < uint64, std::fstream > file;
@@ -54,10 +54,8 @@ public:
 	void SetIntAt( uint64 var, uint64 ptr );
 	uint64 GetIntFrom( uint64 ptr );
 	
-	// push -  allocate   4096 bytes blocks (if needed)
-	// pop - reallocate n 4096 bytes blocks (if cache.size()-cacheOffset > n*1024)
-	void PushBytes( std::vector < byte > & src );
-	void PopBytes( std::vector < byte > & src, uint64 count );
+	void PushBytes( Array < byte > & src );
+	void PopBytes( Array < byte > & src, uint64 count );
 	void PushValue( uint64 val );
 	void PopValue( uint64 & val );
 	uint64 PopValue();

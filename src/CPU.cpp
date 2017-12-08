@@ -30,15 +30,11 @@ int MyAssemblyLang::DoOnce()
 		printf( ":clearscr:" );
 		getch();
 #endif
-		Gotoxy( 0, 0 );
-		stempclear = new char[512];
-		memset( stempclear, ' ', 311+1 );
-		*((unsigned long long int*)(&(stempclear[311]))) = 0;
-		for( temp = 0; temp < 311; ++temp )
-			printf( stempclear );
-		Gotoxy( 0, 0 );
-		delete[] stempclear;
-		break;
+#if defined __WIN__
+		system( "cls" );
+#else
+		system( "clear" );
+#endif
 		
 	case END:
 		return 0;
