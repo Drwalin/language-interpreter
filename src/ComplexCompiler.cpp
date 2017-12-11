@@ -1,7 +1,7 @@
 
 #pragma once
 
-void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const char * fileNameAsm /*OUT*/ )
+void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const char * fileNameAsm /*out*/ )
 {
 	std::ofstream out;
 	std::ifstream code;
@@ -132,6 +132,8 @@ void MyAssemblyLang::CompileComplexToPrimitive( const char * fileName, const cha
 				}
 				else
 				{
+					if( cmd[0] == "var" || cmd[0] == "ret" || cmd[0] == "endfunc" || cmd[0] == "push" || cmd[0] == "pop" || cmd[0] == "func" || cmd[0] == "call" || cmd[0] == "allocmem" || cmd[0] == "printstring" || cmd[0] == "printint" || cmd[0] == "printchar" || cmd[0] == "getint" || cmd[0] == "getstring" || cmd[0] == "getchar" || cmd[0] == "clearscr" || cmd[0] == "gotoxy" || cmd[0] == "jump" || cmd[0] == "jumptrue" || cmd[0] == "jumpfalse" || cmd[0] == "label" || cmd[0] == "freemem" || cmd[0] == "datacopy" )
+						out << "\n";
 					usedNum = 1;
 					out << cmd[0] << " ";
 				}

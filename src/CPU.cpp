@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Preprocessor.cpp"
 #include "ComplexCompiler.cpp"
 #include "Compiler.cpp"
 #include "MethodsCPU.cpp"
@@ -43,6 +44,9 @@ int MyAssemblyLang::DoOnce()
 		pointer = GetIntFrom( pointer );
 		break;
 	case JUMPTRUE:
+#ifdef DEBUG
+		printf( ":jumptrue:" );
+#endif
 		if( PopValue() != 0 )
 		{
 			pointer = GetIntFrom( pointer );
@@ -51,6 +55,9 @@ int MyAssemblyLang::DoOnce()
 		{
 			pointer += 8;
 		}
+#ifdef DEBUG
+		printf( ":jumped:" );
+#endif
 		break;
 	case JUMPFALSE:
 		if( PopValue() == 0 )
@@ -78,7 +85,8 @@ int MyAssemblyLang::DoOnce()
 #endif
 		break;
 	case RET:		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		utemp1 = functionCache.back();functionCache.resize(functionCache.size()-1);
+		utemp1 = functionCache.back();
+		functionCache.resize( functionCache.size() - 1 );
 		FreeMemory( localVariableOffset, utemp1 );
 		localVariableOffset = functionCache.back();functionCache.resize(functionCache.size()-1);
 		pointer = functionCache.back();functionCache.resize(functionCache.size()-1);
@@ -87,7 +95,7 @@ int MyAssemblyLang::DoOnce()
 #endif
 		break;
 		
-		
+			
 		
 	case PUSHADRESSVALUEGLOBAL:
 		PushValue( GetIntFrom( GetIntFrom( GetIntFrom( pointer ) ) ) );
@@ -133,6 +141,9 @@ int MyAssemblyLang::DoOnce()
 		PushValue( GetIntFrom( pointer ) );
 		pointer += 8;
 		break;
+		
+		
+		
 	case PRINTCHAR:
 		printf( "%c", (char)PopValue() );
 		break;
@@ -191,129 +202,222 @@ int MyAssemblyLang::DoOnce()
 		
 		
 	case ALU:
+#ifdef DEBUG
+		printf( ":alu:" );
+		if( cache.size() >= 8 )
+			printf( "val=%lli", (int64*)(cache.begin() + (cache.size() - 8) ) );
+		printf( ":alu:" );
+		getch();
+#endif
 		switch( data[pointer++] )
 		{
 		case ADD:
+#ifdef DEBUG
+		printf( "add:" );
+		printf( "::%lld-%lld::", cache.size(), cache.capacity() );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2+temp1) );
 			break;
 		case SUB:
+#ifdef DEBUG
+		printf( "sub:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2-temp1) );
 			break;
 		case DIV:
+#ifdef DEBUG
+		printf( "div:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2/temp1) );
 			break;
 		case MOD:
+#ifdef DEBUG
+		printf( "mod:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2%temp1) );
 			break;
 		case MUL:
+#ifdef DEBUG
+		printf( "mul:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2*temp1) );
 			break;
 		case AND:
+#ifdef DEBUG
+		printf( "and:" );
+#endif
 			utemp1 = PopValue(); utemp2 = PopValue();
 			PushValue( uint64(utemp2&utemp1) );
 			break;
 		case NAND:
+#ifdef DEBUG
+		printf( "nand:" );
+#endif
 			utemp1 = PopValue(); utemp2 = PopValue();
 			PushValue( ~uint64(utemp2&utemp1) );
 			break;
 		case OR:
+#ifdef DEBUG
+		printf( "or:" );
+#endif
 			utemp1 = PopValue(); utemp2 = PopValue();
 			PushValue( uint64(utemp2|utemp1) );
 			break;
 		case NOR:
+#ifdef DEBUG
+		printf( "nor:" );
+#endif
 			utemp1 = PopValue(); utemp2 = PopValue();
 			PushValue( ~uint64(utemp2|utemp1) );
 			break;
 		case XOR:
+#ifdef DEBUG
+		printf( "xor:" );
+#endif
 			utemp1 = PopValue(); utemp2 = PopValue();
 			PushValue( uint64(utemp2^utemp1) );
 			break;
 		case XNOR:
+#ifdef DEBUG
+		printf( "xnor:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( ~uint64(utemp2^utemp1) );
 			break;
 		case NOT:
+#ifdef DEBUG
+		printf( "not:" );
+#endif
 			PushValue( ~PopValue() );
 			break;
 		case POW:
+#ifdef DEBUG
+		printf( "pow:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			temp = pow( (double)temp2, (double)temp1 );
 			PushValue( uint64(temp) );
 			break;
 		case SQRT:
+#ifdef DEBUG
+		printf( "sqrt:" );
+#endif
 			temp = PopValue();
 			temp = sqrt( (double)temp );
 			PushValue( uint64(temp) );
 			break;
 		case SHIFTLEFT:
+#ifdef DEBUG
+		printf( "shiftleft:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( temp2<<temp1 );
 			break;
 		case SHIFTRIGHT:
+#ifdef DEBUG
+		printf( "shiftright:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( temp2>>temp1 );
 			break;
 		case EQUAL:
+#ifdef DEBUG
+		printf( "equal:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2==temp1) );
 			break;
 		case NOTEQUAL:
+#ifdef DEBUG
+		printf( "notequal:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2!=temp1) );
 			break;
 		case LESS:
+#ifdef DEBUG
+		printf( "less:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2<temp1) );
 			break;
 		case GRATER:
+#ifdef DEBUG
+		printf( "grater:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2>temp1) );
 			break;
 		case LESSEQUAL:
+#ifdef DEBUG
+		printf( "lessequal:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2<=temp1) );
 			break;
 		case GRATEREQUAL:
+#ifdef DEBUG
+		printf( "graterequal:" );
+#endif
 			temp1 = PopValue(); temp2 = PopValue();
 			PushValue( uint64(temp2>=temp1) );
 			break;
 			
 		case STRINGEQUAL:
+#ifdef DEBUG
+		printf( "stringequal:" );
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
 			PushValue( uint64(stemp2==stemp1) );
 			break;
 		case STRINGNOTEQUAL:
+#ifdef DEBUG
+		printf( "stringnotequal:" );
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
 			PushValue( uint64(stemp2!=stemp1) );
 			break;
 		case STRINGLESS:
+#ifdef DEBUG
+		printf( "stringless:" );
+		getch();
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
 			PushValue( uint64(stemp2<stemp1) );
 			break;
 		case STRINGGRATER:
+#ifdef DEBUG
+		printf( "stringgrater:" );
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
 			PushValue( uint64(stemp2>stemp1) );
 			break;
 		case STRINGLESSEQUAL:
+#ifdef DEBUG
+		printf( "stringlessequal:" );
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
 			PushValue( uint64(stemp2<=stemp1) );
 			break;
 		case STRINGGRATEREQUAL:
+#ifdef DEBUG
+		printf( "stringgraterequal:" );
+#endif
 			stemp1 = stemp2 = "";
 			stemp1 = (char*)(&data[PopValue()]);
 			stemp2 = (char*)(&data[PopValue()]);
@@ -321,11 +425,17 @@ int MyAssemblyLang::DoOnce()
 			break;
 			
 		case TOBOOLEAN:
+#ifdef DEBUG
+		printf( "toboolean:" );
+#endif
 			PushValue( uint64(PopValue()!=0) );
 			break;
 		default:
 			return 0;
 		}
+#ifdef DEBUG
+		printf( "done:" );
+#endif
 		break;
 	default:
 		return 0;

@@ -38,8 +38,8 @@ public:
 	std::map < uint64, std::fstream > file;
 	uint64 counterActions;		// counter of iterations
 	
-	std::vector < uint64 > freeMemoryMap;
-	std::vector < uint64 > functionCache;
+	Array < uint64 > freeMemoryMap;
+	Array < uint64 > functionCache;
 	
 	bool debug;
 	
@@ -67,7 +67,8 @@ public:
 
 	void Clear();
 	void PrimitiveCompiler( const char * fileName );
-	void CompileComplexToPrimitive( const char * fileName, const char * fileNameAsm /*OUT*/ );
+	void CompileComplexToPrimitive( const char * fileName, const char * fileNameAsm /*out*/ );
+	void Preprocessor( const char * fileName, const char * fileNameComplex /*out*/ );
 	void Load( const char * fileName );
 	void Save( const char * fileName );
 

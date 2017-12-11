@@ -111,7 +111,7 @@ uint64 MyAssemblyLang::AllocateMemory( uint64 size )
 		if( temp == size )
 		{
 			temp = freeMemoryMap[i];
-			freeMemoryMap.erase( freeMemoryMap.begin()+i, freeMemoryMap.begin()+i+2 );
+			freeMemoryMap.erase( i, i+2 );
 			return temp;
 		}
 		else if( temp > size )
@@ -135,8 +135,8 @@ void MyAssemblyLang::FreeMemory( uint64 beg, uint64 size )
 		{
 			if( end < freeMemoryMap[i] )
 			{
-				freeMemoryMap.insert( freeMemoryMap.begin()+i, end );
-				freeMemoryMap.insert( freeMemoryMap.begin()+i, beg );
+				freeMemoryMap.insert( i, end );
+				freeMemoryMap.insert( i, beg );
 				break;
 			}
 		}
@@ -161,7 +161,7 @@ void MyAssemblyLang::FreeMemory( uint64 beg, uint64 size )
 			break;
 		if( freeMemoryMap[i+1]+1 >= freeMemoryMap[i+2] )
 		{
-			freeMemoryMap.erase( freeMemoryMap.begin()+i+1, freeMemoryMap.begin()+i+3 );
+			freeMemoryMap.erase( i+1, i+3 );
 			continue;
 		}
 		i+=2;
