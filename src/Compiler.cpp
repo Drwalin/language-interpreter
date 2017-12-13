@@ -187,6 +187,8 @@ void MyAssemblyLang::PrimitiveCompiler( const char * fileName )
 												break;
 											case '\\':
 												dst += "\\";
+											case 's':
+												dst += " ";
 												break;
 											default:
 												goto VAR_STRING_FORMAT_ERROR;

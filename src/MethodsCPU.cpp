@@ -68,12 +68,18 @@ inline void MyAssemblyLang::PopBytes( Array < byte > & src, uint64 count )
 
 inline void MyAssemblyLang::PushValue( uint64 val )
 {
+#ifdef DEBUG
+	printf( ":push:%lli:point=%lli:", (int64)val, (int64)cache.size() );
+#endif
 	cache.insert( cache.size(), (byte*)(&val), sizeof(uint64) );
 }
 
 inline void MyAssemblyLang::PopValue( uint64 & val )
 {
 	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+#ifdef DEBUG
+	printf( ":pop:%lli::", (int64)val );
+#endif
 	cache.resize( cache.size() - sizeof(val) );
 }
 
@@ -81,6 +87,9 @@ inline uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
 	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+#ifdef DEBUG
+	printf( ":pop:%lli:point=%lli:", (int64)val, (int64)cache.size() );
+#endif
 	cache.resize( cache.size() - sizeof(val) );
 	return val;
 }
@@ -91,15 +100,16 @@ inline void MyAssemblyLang::Clear()
 	data.clear();
 }
 
-void MyAssemblyLang::Do( const uint64 count )
+inline int MyAssemblyLang::Do( const uint64 count )
 {
 	for( uint64 i = 0; i < count; ++i )
 	{
 		if( DoOnce() == 0 )
 		{
-			break;
+			return 0;
 		}
 	}
+	return 1;
 }
 
 uint64 MyAssemblyLang::AllocateMemory( uint64 size )

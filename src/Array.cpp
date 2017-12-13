@@ -64,14 +64,28 @@ public:
 	
 	inline void resize( const long long int size )
 	{
-		register long long int temp = ( ( size >> ARRAY_SHIFT_BIT_FULL_SIZE ) + 1 ) << ARRAY_SHIFT_BIT_FULL_SIZE;
-		
-		if( temp > fullsize )
+		if( size >= 0 )
 		{
-			fullsize = temp;
-			ptr = (T*) realloc( ptr, fullsize );
+			register long long int temp = ( ( size >> ARRAY_SHIFT_BIT_FULL_SIZE ) + 1 ) << ARRAY_SHIFT_BIT_FULL_SIZE;
+			
+			if( temp > fullsize )
+			{
+				fullsize = temp;
+				ptr = (T*) realloc( ptr, fullsize );
+			}
+			this->ptrsize = size;
 		}
-		this->ptrsize = size;
+		else
+		{
+			register long long int temp = 1 << ARRAY_SHIFT_BIT_FULL_SIZE;
+			
+			if( temp > fullsize )
+			{
+				fullsize = temp;
+				ptr = (T*) realloc( ptr, fullsize );
+			}
+			this->ptrsize = 0;
+		}
 	}
 	
 	inline void push_back( const T src )

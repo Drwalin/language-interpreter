@@ -72,8 +72,8 @@ public:
 	void Load( const char * fileName );
 	void Save( const char * fileName );
 
-	int DoOnce();
-	void Do( const uint64 count );
+	inline int DoOnce();
+	inline int Do( const uint64 count );
 
 	MyAssemblyLang();
 	~MyAssemblyLang();

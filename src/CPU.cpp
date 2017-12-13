@@ -9,9 +9,10 @@
 
 #include "Gotoxy.cpp"
 
-int MyAssemblyLang::DoOnce()
+inline int MyAssemblyLang::DoOnce()
 {
 	++counterActions;
+	BEGIN:
 	switch( data[pointer++] )
 	{
 	case GOTOXY:
@@ -440,6 +441,9 @@ int MyAssemblyLang::DoOnce()
 	default:
 		return 0;
 	}
+	
+	goto BEGIN;
+	
 	return 1;
 }
 
