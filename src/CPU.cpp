@@ -11,9 +11,8 @@
 
 inline int MyAssemblyLang::DoOnce()
 {
-	++counterActions;
 	BEGIN:
-	switch( data[pointer++] )
+	switch( *(data.begin()+(pointer++)) )
 	{
 	case GOTOXY:
 		temp1 = PopValue()/*y*/; temp2 = PopValue()/*x*/;

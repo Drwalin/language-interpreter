@@ -57,41 +57,57 @@ void MyAssemblyLang::End()
 
 inline void MyAssemblyLang::PushBytes( Array < byte > & src )
 {
-	cache.insert( cache.size(), src.begin(), src.size() );
+	cache.resize( cache.size() + src.size() );
+	memcpy( cache.end() - src.size(), src.begin(), src.size() );
 }
 
 inline void MyAssemblyLang::PopBytes( Array < byte > & src, uint64 count )
 {
-	src.insert( src.size(), cache.end() - count, count );
+	src.resize( count );
+	memcpy( src.begin(), cache.end() - count, count );
 	cache.resize( cache.size() - count );
 }
 
 inline void MyAssemblyLang::PushValue( uint64 val )
 {
+	
 #ifdef DEBUG
 	printf( ":push:%lli:point=%lli:", (int64)val, (int64)cache.size() );
 #endif
-	cache.insert( cache.size(), (byte*)(&val), sizeof(uint64) );
+	cache.resize( cache.size() + sizeof(uint64) );
+	memcpy( cache.end() - sizeof(uint64), &val, sizeof(uint64) );
+	
+	//asm( "pushq 8(%rbp)" );
 }
 
 inline void MyAssemblyLang::PopValue( uint64 & val )
 {
-	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+	
+	memcpy( &val, cache.end() - sizeof(uint64), sizeof(uint64) );
 #ifdef DEBUG
 	printf( ":pop:%lli::", (int64)val );
 #endif
-	cache.resize( cache.size() - sizeof(val) );
+	cache.resize( cache.size() - sizeof(uint64) );
+	
+	//val = 16;
+	//asm( "popq 8(%rbp)" );
 }
 
 inline uint64 MyAssemblyLang::PopValue()
 {
 	uint64 val = 0;
-	memcpy( &val, cache.end() - sizeof(val), sizeof(val) );
+	
+	memcpy( &val, cache.end() - sizeof(uint64), sizeof(uint64) );
 #ifdef DEBUG
 	printf( ":pop:%lli:point=%lli:", (int64)val, (int64)cache.size() );
 #endif
-	cache.resize( cache.size() - sizeof(val) );
+	cache.resize( cache.size() - sizeof(uint64) );
+	
+	//asm( "popq -8(%rbp)" );
 	return val;
+	//asm( "popq %rax" );
+	//asm( "popq %rbp" );
+	//asm( "ret" );
 }
 
 inline void MyAssemblyLang::Clear()

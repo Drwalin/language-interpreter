@@ -8,7 +8,7 @@
 #define ARRAY_SHIFT_BIT_FULL_SIZE 12
 
 template < class T >
-class Array
+struct Array
 {
 private:
 	T * ptr;
